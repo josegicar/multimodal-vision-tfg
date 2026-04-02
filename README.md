@@ -49,6 +49,9 @@ cp .env.example .env
 
 # Aplica la plantilla de commits
 git config commit.template .gitmessage
+
+# (Opcional) Abre el editor de commits con VSCode
+git config --global core.editor "code --wait"
 ```
 
 # Iniciar el server de uvicorn
