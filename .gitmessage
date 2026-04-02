@@ -1,0 +1,14 @@
+<type>: <short description in lowercase>
+
+# Ejemplo: 
+#
+# feat: add new functionality
+# 
+# Tipos permitidos:
+#
+# feat: -> Nueva funcionalidad
+# fix: -> Error corregido
+# docs: -> Documentación
+# refactor: -> Mejora de código sin cambiar función
+# style: -> Formato (espacios, puntos y coma)
+# test: -> Añadir tests
