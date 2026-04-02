@@ -27,7 +27,7 @@ git pull origin main
 2. Creación de la Rama de Tarea(Branching)
 
 ```bash
-git checkout -b feat/mi-tarea
+git checkout -b feature/mi-tarea
 ```
 
 3. Desarrollo y Commits
@@ -40,7 +40,7 @@ git commit # Aquí se abrirá la plantilla .gitmessage
 4. Subida y Revisión
 
 ```bash
-git push origin feat/mi-tarea
+git push origin feature/mi-tarea
 ```
 
 ### El flujo de trabajo profesional cuando termines una tarea sería este:
