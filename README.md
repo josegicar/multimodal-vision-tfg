@@ -60,3 +60,10 @@ git config --global core.editor "code --wait"
 cd backend
 uvicorn main:app --reload
 ```
+
+# Iniciar el frontend
+
+```bash
+cd frontend
+npm run dev
+```

@@ -10,3 +10,9 @@
 - Logros: Backend MVP funcional, YOLO detectando objetos, OpenAI respondiendo
 - Problemas encontrados: Crear api key de OpenAI y añadir el mínimo de 5€ de créditos, crear venv con las librerías necesarias
 - Próximos pasos: frontend básico en React
+
+## Sesión 3 — 020/06/2026
+- Tiempo: Xmin
+- Logros: Repo limpio en GitHub, .gitignore correcto, yolov8n.pt eliminado del repo
+- Problemas encontrados: yolov8n.pt subido por error al repo
+- Próximos pasos: Frontend básico en React
