@@ -39,9 +39,19 @@ Clona el repositorio y edita las variables de entorno en .env
 ```bash
 git clone https://github.com/josegicar/multimodal-vision-tfg.git
 cd multimodal-vision-tfg
+```
 
+### 5. Modificaciones para cada área de trabajo
+
+```bash
 # Extrae el archivo .env.example como .env a la raíz de tu proyecto y edita las variables:
 cp .env.example .env
+
+# Aplica la plantilla de commits
+git config commit.template .gitmessage
+
+# (Opcional) Abre el editor de commits con VSCode
+git config --global core.editor "code --wait"
 ```
 
 # Iniciar el server de uvicorn
@@ -49,4 +59,11 @@ cp .env.example .env
 ```bash
 cd backend
 uvicorn main:app --reload
+```
+
+# Iniciar el frontend
+
+```bash
+cd frontend
+npm run dev
 ```
