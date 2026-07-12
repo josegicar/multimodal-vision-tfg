@@ -16,3 +16,11 @@
 - Logros: Repo limpio en GitHub, .gitignore correcto, yolov8n.pt eliminado del repo y primera versión del frontend creada
 - Problemas encontrados: yolov8n.pt subido por error al repo
 - Próximos pasos: Frontend más desarrollado en React
+
+## Sesión 4 - 12/07/2026
+- Tiempo: 40 min
+- Logros: Icono de la página web creado y rediseño de la página con Tailwind CSS, favicon personalizado en el tab del navegador, bounding boxes
+  con OverlayCanvas funcionando sobre la imagen analizada
+- Problemas encontrados: Tailwind v4 solo necesita una línea en index.css y App.tsx tenía estilos inline incompatibles con Tailwind que había que
+  sustituir completamente
+- Próximos pasos: Añadir captura de webcam en tiempo real (Fase 1)
