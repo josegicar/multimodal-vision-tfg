@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import axios from 'axios'
+import { Navbar } from './components/Navbar'
 import { OverlayCanvas } from './components/OverlayCanvas'
+import { useLanguage } from './context/LanguageContext'
 
 const API_URL = 'http://127.0.0.1:8000'
 
@@ -15,6 +17,13 @@ interface AnalyzeResponse {
   detections: Detection[]
 }
 
+interface HistoryEntry {
+  query: string
+  answer: string
+  preview: string
+  detections: Detection[]
+}
+
 function App() {
   const [image, setImage] = useState<File | null>(null)
   const [preview, setPreview] = useState<string>('')
@@ -22,6 +31,10 @@ function App() {
   const [result, setResult] = useState<AnalyzeResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+
+  const { language, t } = useLanguage()
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -41,13 +54,25 @@ function App() {
       const formData = new FormData()
       formData.append('image', image)
       formData.append('query', query)
+      formData.append('language', language)
 
       const response = await axios.post<AnalyzeResponse>(
         `${API_URL}/api/analyze`,
         formData
       )
       setResult(response.data)
+
+      setHistory(prev => [{
+        query,
+        answer: response.data.answer,
+        preview,
+        detections: response.data.detections
+      }, ...prev])
+
+      setQuery('')
+      
     } catch (err) {
+      console.error(err)
       setError('Error al conectar con el backend')
     } finally {
       setLoading(false)
@@ -57,91 +82,170 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center px-4 py-12">
 
-      {/* Header */}
-      <div className="mb-10 text-center">
-        <h1 className="text-5xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-          Asistente Visual
-        </h1>
-        <p className="text-gray-400 mt-2 text-lg">
-          Sube una imagen y pregunta lo que quieras
-        </p>
-      </div>
+      <Navbar />
 
-      {/* Card principal */}
-      <div className="w-full max-w-2xl bg-gray-900 rounded-2xl shadow-xl p-8 flex flex-col gap-6">
+      <div className="flex flex-col items-center px-4 py-12">
+        {/* Header */}
+        <div className="mb-10 text-center">
+          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            {t.title}
+          </h1>
+          <p className="text-gray-400 mt-2 text-lg">
+            {t.subtitle}
+          </p>
+        </div>
 
-        {/* Upload */}
-        <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-8 cursor-pointer hover:border-purple-500 transition-colors">
-          <span className="text-4xl mb-2">📁</span>
-          <span className="text-gray-400">
-            {image ? image.name : 'Haz clic para subir una imagen'}
-          </span>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-          />
-        </label>
+        {/* Layout — card centrada + historial fijo a la derecha */}
+        <div className="w-full max-w-6xl flex justify-center relative">
 
-        {/* Preview o Canvas */}
-        {preview && !result && (
-          <img
-            src={preview}
-            alt="Preview"
-            className="rounded-xl w-full object-contain max-h-96"
-          />
-        )}
-        {result && (
-          <OverlayCanvas imageUrl={preview} detections={result.detections} />
-        )}
+          {/* Card principal centrada */}
+          <div className="w-full max-w-2xl bg-gray-900 rounded-2xl shadow-xl p-8 flex flex-col gap-6">
 
-        {/* Input query */}
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-          placeholder="¿Qué quieres saber sobre la imagen?"
-          className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
-        />
+            {/* Upload */}
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-8 cursor-pointer hover:border-purple-500 transition-colors">
+              <span className="text-4xl mb-2">📁</span>
+              <span className="text-gray-400">
+                {image ? image.name : t.upload}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
 
-        {/* Botón */}
-        <button
-          onClick={handleSubmit}
-          disabled={!image || !query || loading}
-          className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-        >
-          {loading ? 'Analizando...' : 'Analizar imagen'}
-        </button>
+            {/* Preview o Canvas */}
+            {preview && !result && (
+              <img
+                src={preview}
+                alt="Preview"
+                className="rounded-xl w-full object-contain max-h-96"
+              />
+            )}
+            {result && (
+              <OverlayCanvas imageUrl={preview} detections={result.detections} />
+            )}
 
-        {/* Error */}
-        {error && (
-          <p className="text-red-400 text-center">{error}</p>
-        )}
+            {/* Input query */}
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              placeholder={t.placeholder}
+              className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+            />
 
-        {/* Resultado */}
-        {result && (
-          <div className="bg-gray-800 rounded-xl p-6 flex flex-col gap-4">
-            <div>
-              <h3 className="text-purple-400 font-semibold mb-1">Respuesta</h3>
-              <p className="text-gray-200">{result.answer}</p>
-            </div>
-            <div>
-              <h3 className="text-blue-400 font-semibold mb-2">Detecciones</h3>
-              <ul className="flex flex-col gap-1">
-                {result.detections.map((det, i) => (
-                  <li key={i} className="flex justify-between text-sm text-gray-300">
-                    <span>{det.class}</span>
-                    <span className={det.confidence > 0.7 ? 'text-green-400' : 'text-yellow-400'}>
-                      {(det.confidence * 100).toFixed(0)}%
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* Botón */}
+            <button
+              onClick={handleSubmit}
+              disabled={!image || !query || loading}
+              className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            >
+              {loading ? t.analyzing : t.analyze}
+            </button>
+
+            {/* Error */}
+            {error && (
+              <p className="text-red-400 text-center">{t.error}</p>
+            )}
+
+            {/* Resultado actual */}
+            {result && (
+              <div className="bg-gray-800 rounded-xl p-6 flex flex-col gap-4">
+                <div>
+                  <h3 className="text-purple-400 font-semibold mb-1">{t.response}</h3>
+                  <p className="text-gray-200">{result.answer}</p>
+                </div>
+                <div>
+                  <h3 className="text-blue-400 font-semibold mb-2">{t.detections}</h3>
+                  {result.detections.length > 0 ? (
+                    <ul className="flex flex-col gap-1">
+                      {result.detections.map((det, i) => (
+                        <li key={i} className="flex justify-between text-sm text-gray-300">
+                          <span>{det.class}</span>
+                          <span className={det.confidence > 0.7 ? 'text-green-400' : 'text-yellow-400'}>
+                            {(det.confidence * 100).toFixed(0)}%
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500 text-sm">{t.noDetections}</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Historial fijo a la derecha sin afectar el centro */}
+          <div className="absolute left-full ml-6 w-72 flex flex-col gap-4 top-0">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-300">{t.history}</h2>
+              {history.length > 0 && (
+                <button
+                  onClick={() => setHistory([])}
+                  className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                >
+                  {t.clear}
+                </button>
+              )}
+            </div>
+
+            {history.length === 0 ? (
+              <p className="text-gray-600 text-sm">{t.historyEmpty}</p>
+            ) : (
+              <div className="flex flex-col gap-3 max-h-[80vh] overflow-y-auto pr-1">
+                {history.map((entry, i) => (
+                  <div
+                    key={i}
+                    className="bg-gray-900 rounded-xl p-4 flex flex-col gap-3 cursor-pointer hover:bg-gray-800 transition-colors"
+                    onClick={() => setExpandedIndex(expandedIndex === i ? null : i)}
+                  >
+                    <div className="flex gap-3">
+                      <img
+                        src={entry.preview}
+                        alt="thumb"
+                        className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                      />
+                      <div className="flex flex-col gap-1 overflow-hidden">
+                        <p className="text-purple-400 text-sm font-semibold truncate">
+                          🔍 {entry.query}
+                        </p>
+                        <p className={`text-gray-300 text-xs ${expandedIndex === i ? '' : 'line-clamp-3'}`}>
+                          {entry.answer}
+                        </p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          {entry.detections.length > 0
+                            ? t.detectedObjects(entry.detections.length)
+                            : t.noDetections}
+                        </p>
+                      </div>
+                    </div>
+
+                    {expandedIndex === i && entry.detections.length > 0 && (
+                      <ul className="flex flex-col gap-1 border-t border-gray-700 pt-3">
+                        {entry.detections.map((det, j) => (
+                          <li key={j} className="flex justify-between text-xs text-gray-300">
+                            <span>{det.class}</span>
+                            <span className={det.confidence > 0.7 ? 'text-green-400' : 'text-yellow-400'}>
+                              {(det.confidence * 100).toFixed(0)}%
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <p className="text-gray-600 text-xs text-right">
+                      {expandedIndex === i ? '▲ cerrar' : '▼ ver más'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )

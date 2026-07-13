@@ -1,0 +1,152 @@
+import { createContext, useContext, useState } from 'react'
+
+const languages = {
+  es: {
+    code: 'es',
+    flag: '🇪🇸',
+    name: 'Español',
+    placeholder: '¿Qué quieres saber sobre la imagen?',
+    upload: 'Haz clic para subir una imagen',
+    analyze: 'Analizar imagen',
+    analyzing: 'Analizando...',
+    response: 'Respuesta',
+    detections: 'Detecciones',
+    history: 'Historial',
+    clear: 'Limpiar',
+    noDetections: 'Sin objetos detectables por YOLO',
+    historyEmpty: 'Las consultas aparecerán aquí',
+    title: 'Asistente Virtual',
+    subtitle: 'Sube una imagen y pregunta lo que quieras',
+    error: 'Error al conectar con el backend',
+    detectedObjects: (n: number) => `${n} objeto(s) detectado(s)`,
+  },
+  en: {
+    code: 'en',
+    flag: '🇬🇧',
+    name: 'English',
+    placeholder: 'What do you want to know about the image?',
+    upload: 'Click to upload an image',
+    analyze: 'Analyze image',
+    analyzing: 'Analyzing...',
+    response: 'Response',
+    detections: 'Detections',
+    history: 'History',
+    clear: 'Clear',
+    noDetections: 'No detectable objects by YOLO',
+    historyEmpty: 'Queries will appear here',
+    title: 'Virtual Assistant',
+    subtitle: 'Upload an image and ask anything',
+    error: 'Error connecting to backend',
+    detectedObjects: (n: number) => `${n} detected object(s)`,
+  },
+  fr: {
+    code: 'fr',
+    flag: '🇫🇷',
+    name: 'Français',
+    placeholder: 'Que voulez-vous savoir sur l\'image?',
+    upload: 'Cliquez pour télécharger une image',
+    analyze: 'Analyser l\'image',
+    analyzing: 'Analyse en cours...',
+    response: 'Réponse',
+    detections: 'Détections',
+    history: 'Historique',
+    clear: 'Effacer',
+    noDetections: 'Aucun objet détectable par YOLO',
+    historyEmpty: 'Les requêtes apparaîtront ici',
+    title: 'Assistant Virtuel',
+    subtitle: 'Téléchargez une image et posez vos questions',
+    error: 'Erreur de connexion au backend',
+    detectedObjects: (n: number) => `${n} objet(s) détecté(s)`,
+  },
+  de: {
+    code: 'de',
+    flag: '🇩🇪',
+    name: 'Deutsch',
+    placeholder: 'Was möchten Sie über das Bild wissen?',
+    upload: 'Klicken Sie, um ein Bild hochzuladen',
+    analyze: 'Bild analysieren',
+    analyzing: 'Analysiere...',
+    response: 'Antwort',
+    detections: 'Erkennungen',
+    history: 'Verlauf',
+    clear: 'Löschen',
+    noDetections: 'Keine erkennbaren Objekte durch YOLO',
+    historyEmpty: 'Anfragen werden hier angezeigt',
+    title: 'Virtueller Assistent',
+    subtitle: 'Laden Sie ein Bild hoch und fragen Sie alles',
+    error: 'Fehler beim Verbinden mit dem Backend',
+    detectedObjects: (n: number) => `${n} erkanntes Objekt(e)`,
+  },
+  it: {
+    code: 'it',
+    flag: '🇮🇹',
+    name: 'Italiano',
+    placeholder: 'Cosa vuoi sapere sull\'immagine?',
+    upload: 'Clicca per caricare un\'immagine',
+    analyze: 'Analizza immagine',
+    analyzing: 'Analisi in corso...',
+    response: 'Risposta',
+    detections: 'Rilevamenti',
+    history: 'Cronologia',
+    clear: 'Cancella',
+    noDetections: 'Nessun oggetto rilevabile da YOLO',
+    historyEmpty: 'Le query appariranno qui',
+    title: 'Assistente Virtuale',
+    subtitle: 'Carica un\'immagine e chiedi qualsiasi cosa',
+    error: 'Errore di connessione al backend',
+    detectedObjects: (n: number) => `${n} oggetto/i rilevato/i`,
+  },
+  pt: {
+    code: 'pt',
+    flag: '🇵🇹',
+    name: 'Português',
+    placeholder: 'O que você quer saber sobre a imagem?',
+    upload: 'Clique para enviar uma imagem',
+    analyze: 'Analisar imagem',
+    analyzing: 'Analisando...',
+    response: 'Resposta',
+    detections: 'Detecções',
+    history: 'Histórico',
+    clear: 'Limpar',
+    noDetections: 'Nenhum objeto detectável pelo YOLO',
+    historyEmpty: 'As consultas aparecerão aqui',
+    title: 'Assistente Virtual',
+    subtitle: 'Envie uma imagem e pergunte qualquer coisa',
+    error: 'Erro ao conectar com o backend',
+    detectedObjects: (n: number) => `${n} objeto(s) detetado(s)`,
+  },
+}
+
+export type LanguageCode = keyof typeof languages
+export type Translations = typeof languages.es
+
+interface LanguageContextType {
+  language: LanguageCode
+  setLanguage: (lang: LanguageCode) => void
+  t: Translations
+  allLanguages: typeof languages
+}
+
+const LanguageContext = createContext<LanguageContextType | null>(null)
+
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const [language, setLanguage] = useState<LanguageCode>('es')
+
+  return (
+    <LanguageContext.Provider value={{
+      language,
+      setLanguage,
+      t: languages[language],
+      allLanguages: languages,
+    }}>
+      {children}
+    </LanguageContext.Provider>
+  )
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function useLanguage() {
+  const ctx = useContext(LanguageContext)
+  if (!ctx) throw new Error('useLanguage debe usarse dentro de LanguageProvider')
+  return ctx
+}
