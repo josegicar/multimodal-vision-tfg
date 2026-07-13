@@ -23,16 +23,14 @@
   con OverlayCanvas funcionando sobre la imagen analizada
 - Problemas encontrados: Tailwind v4 solo necesita una línea en index.css y App.tsx tenía estilos inline incompatibles con Tailwind que había que
   sustituir completamente
-- Próximos pasos: Añadir captura de webcam en tiempo real (Fase 1)
+- Próximos pasos: Añadir captura de webcam en tiempo real (Fase 1) / Mejorar la interfaz y experiencia de los usuarios
 
 ## Sesión 5 — 13/07/2026
-- Tiempo: 1h42min (rellena con Clockify)
+- Tiempo: 2h12min (rellena con Clockify)
 - Logros: GPT-4o Vision integrado para analizar imágenes directamente (no solo detecciones de YOLO),
   historial de consultas con miniaturas y expansión al pulsar, selector de idioma global con Context API
   (español, inglés, francés, alemán, italiano, portugués), navbar integrada con logo y título traducido,
   toda la UI traducida dinámicamente al cambiar de idioma
 - Problemas encontrados: YOLO no detecta objetos en logos/ilustraciones al estar entrenado solo con
-  objetos del mundo real, selector de idioma nativo del SO con estilos incorrectos resuelto con
-  appearance-none y flecha personalizada, navbar fixed cortaba el contenido resuelto integrándola
-  en el flujo normal de la página
-- Próximos pasos: Captura de webcam en tiempo real (Fase 1)
+  objetos del mundo real
+- Próximos pasos: Añadir captura de webcam en tiempo real (Fase 1)
