@@ -1,6 +1,18 @@
 # multimodal-vision-tfg
 Proyecto de TFG centrado en la creación de un agente multimodal con FastAPI y React. Implementa un pipeline de visión artificial (YOLO, OpenCV) y procesamiento de lenguaje natural para responder consultas por voz y texto sobre objetos detectados en cámara.
 
+## Estado actual
+- ✅ Fase 0 — Asistente visual con imagen estática
+- 🔄 Fase 1 — Webcam en tiempo real (en progreso)
+
+## Stack
+- **Backend**: FastAPI + YOLOv8 + GPT-4o Vision
+- **Frontend**: React 19 + TypeScript + Tailwind CSS v4
+
+## Requisitos previos
+- Python 3.10+
+- Node.js 18+
+
 # Primeros pasos
 
 ### 1. Preparar el Entorno Virtual
@@ -55,6 +67,7 @@ git config --global core.editor "code --wait"
 ```
 
 # Iniciar el server de uvicorn
+- Backend docs: http://127.0.0.1:8000/docs
 
 ```bash
 cd backend
@@ -62,8 +75,10 @@ uvicorn main:app --reload
 ```
 
 # Iniciar el frontend
+- Frontend: http://localhost:5173
 
 ```bash
 cd frontend
+npm install # Instalar módulos la primera vez
 npm run dev
 ```

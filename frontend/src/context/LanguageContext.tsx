@@ -18,6 +18,8 @@ const languages = {
     title: 'Asistente Virtual',
     subtitle: 'Sube una imagen y pregunta lo que quieras',
     error: 'Error al conectar con el backend',
+    expand: '▼ ver más',
+    collapse: '▲ cerrar',
     detectedObjects: (n: number) => `${n} objeto(s) detectado(s)`,
   },
   en: {
@@ -37,6 +39,8 @@ const languages = {
     title: 'Virtual Assistant',
     subtitle: 'Upload an image and ask anything',
     error: 'Error connecting to backend',
+    expand: '▼ see more',
+    collapse: '▲ close',
     detectedObjects: (n: number) => `${n} detected object(s)`,
   },
   fr: {
@@ -56,6 +60,8 @@ const languages = {
     title: 'Assistant Virtuel',
     subtitle: 'Téléchargez une image et posez vos questions',
     error: 'Erreur de connexion au backend',
+    expand: '▼ voir plus',
+    collapse: '▲ fermer',
     detectedObjects: (n: number) => `${n} objet(s) détecté(s)`,
   },
   de: {
@@ -75,6 +81,8 @@ const languages = {
     title: 'Virtueller Assistent',
     subtitle: 'Laden Sie ein Bild hoch und fragen Sie alles',
     error: 'Fehler beim Verbinden mit dem Backend',
+    expand: '▼ mehr sehen',
+    collapse: '▲ schließen',
     detectedObjects: (n: number) => `${n} erkanntes Objekt(e)`,
   },
   it: {
@@ -94,6 +102,8 @@ const languages = {
     title: 'Assistente Virtuale',
     subtitle: 'Carica un\'immagine e chiedi qualsiasi cosa',
     error: 'Errore di connessione al backend',
+    expand: '▼ vedi di più',
+    collapse: '▲ chiudi',
     detectedObjects: (n: number) => `${n} oggetto/i rilevato/i`,
   },
   pt: {
@@ -113,6 +123,8 @@ const languages = {
     title: 'Assistente Virtual',
     subtitle: 'Envie uma imagem e pergunte qualquer coisa',
     error: 'Erro ao conectar com o backend',
+    expand: '▼ ver mais',
+    collapse: '▲ fechar',
     detectedObjects: (n: number) => `${n} objeto(s) detetado(s)`,
   },
 }

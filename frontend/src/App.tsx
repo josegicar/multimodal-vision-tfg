@@ -238,7 +238,7 @@ function App() {
                     )}
 
                     <p className="text-gray-600 text-xs text-right">
-                      {expandedIndex === i ? '▲ cerrar' : '▼ ver más'}
+                      {expandedIndex === i ? t.collapse : t.expand}
                     </p>
                   </div>
                 ))}
