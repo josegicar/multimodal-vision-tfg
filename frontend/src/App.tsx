@@ -3,6 +3,7 @@ import axios from 'axios'
 import { Navbar } from './components/Navbar'
 import { OverlayCanvas } from './components/OverlayCanvas'
 import { useLanguage } from './context/LanguageContext'
+import { WebcamCapture } from './components/WebcamCapture'
 
 const API_URL = 'http://127.0.0.1:8000'
 
@@ -33,6 +34,7 @@ function App() {
   const [error, setError] = useState('')
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+  const [mode, setMode] = useState<'image' | 'webcam'>('image')
 
   const { language, t } = useLanguage()
 
@@ -101,81 +103,136 @@ function App() {
           {/* Card principal centrada */}
           <div className="w-full max-w-2xl bg-gray-900 rounded-2xl shadow-xl p-8 flex flex-col gap-6">
 
-            {/* Upload */}
-            <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-8 cursor-pointer hover:border-purple-500 transition-colors">
-              <span className="text-4xl mb-2">📁</span>
-              <span className="text-gray-400">
-                {image ? image.name : t.upload}
-              </span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
-            </label>
+            {/* Selector de modo */}
+            <div className="flex rounded-xl overflow-hidden border border-gray-700">
+              <button
+                onClick={() => setMode('image')}
+                className={`flex-1 py-2 text-sm font-semibold transition-all ${
+                  mode === 'image'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                }`}
+              >
+                🖼 Imagen
+              </button>
+              <button
+                onClick={() => setMode('webcam')}
+                className={`flex-1 py-2 text-sm font-semibold transition-all ${
+                  mode === 'webcam'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                }`}
+              >
+                📷 Webcam
+              </button>
+            </div>
 
-            {/* Preview o Canvas */}
-            {preview && !result && (
-              <img
-                src={preview}
-                alt="Preview"
-                className="rounded-xl w-full object-contain max-h-96"
-              />
-            )}
-            {result && (
-              <OverlayCanvas imageUrl={preview} detections={result.detections} />
-            )}
+            {mode === 'image' ? (
+              <>
+                {/* Upload */}
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-8 cursor-pointer hover:border-purple-500 transition-colors">
+                  <span className="text-4xl mb-2">📁</span>
+                  <span className="text-gray-400">
+                    {image ? image.name : t.upload}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
 
-            {/* Input query */}
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder={t.placeholder}
-              className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
-            />
+                {preview && !result && (
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="rounded-xl w-full object-contain max-h-96"
+                  />
+                )}
+                {result && (
+                  <OverlayCanvas imageUrl={preview} detections={result.detections} />
+                )}
 
-            {/* Botón */}
-            <button
-              onClick={handleSubmit}
-              disabled={!image || !query || loading}
-              className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-            >
-              {loading ? t.analyzing : t.analyze}
-            </button>
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                  placeholder={t.placeholder}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                />
 
-            {/* Error */}
-            {error && (
-              <p className="text-red-400 text-center">{t.error}</p>
-            )}
+                <button
+                  onClick={handleSubmit}
+                  disabled={!image || !query || loading}
+                  className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  {loading ? t.analyzing : t.analyze}
+                </button>
 
-            {/* Resultado actual */}
-            {result && (
-              <div className="bg-gray-800 rounded-xl p-6 flex flex-col gap-4">
-                <div>
-                  <h3 className="text-purple-400 font-semibold mb-1">{t.response}</h3>
-                  <p className="text-gray-200">{result.answer}</p>
-                </div>
-                <div>
-                  <h3 className="text-blue-400 font-semibold mb-2">{t.detections}</h3>
-                  {result.detections.length > 0 ? (
-                    <ul className="flex flex-col gap-1">
-                      {result.detections.map((det, i) => (
-                        <li key={i} className="flex justify-between text-sm text-gray-300">
-                          <span>{det.class}</span>
-                          <span className={det.confidence > 0.7 ? 'text-green-400' : 'text-yellow-400'}>
-                            {(det.confidence * 100).toFixed(0)}%
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-500 text-sm">{t.noDetections}</p>
-                  )}
-                </div>
-              </div>
+                {error && <p className="text-red-400 text-center">{t.error}</p>}
+
+                {result && (
+                  <div className="bg-gray-800 rounded-xl p-6 flex flex-col gap-4">
+                    <div>
+                      <h3 className="text-purple-400 font-semibold mb-1">{t.response}</h3>
+                      <p className="text-gray-200">{result.answer}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-blue-400 font-semibold mb-2">{t.detections}</h3>
+                      {result.detections.length > 0 ? (
+                        <ul className="flex flex-col gap-1">
+                          {result.detections.map((det, i) => (
+                            <li key={i} className="flex justify-between text-sm text-gray-300">
+                              <span>{det.class}</span>
+                              <span className={det.confidence > 0.7 ? 'text-green-400' : 'text-yellow-400'}>
+                                {(det.confidence * 100).toFixed(0)}%
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-gray-500 text-sm">{t.noDetections}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t.placeholder}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                />
+
+                <WebcamCapture
+                  query={query}
+                  onResult={(r) => {
+                    setResult(r)
+                    if (query) {
+                      setHistory(prev => [{
+                        query,
+                        answer: r.answer,
+                        preview: '',
+                        detections: r.detections
+                      }, ...prev])
+                    }
+                  }}
+                />
+
+                {result && mode === 'webcam' && (
+                  <div className="bg-gray-800 rounded-xl p-6 flex flex-col gap-4">
+                    <div>
+                      <h3 className="text-purple-400 font-semibold mb-1">{t.response}</h3>
+                      <p className="text-gray-200">{result.answer}</p>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -204,11 +261,17 @@ function App() {
                     onClick={() => setExpandedIndex(expandedIndex === i ? null : i)}
                   >
                     <div className="flex gap-3">
-                      <img
-                        src={entry.preview}
-                        alt="thumb"
-                        className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
-                      />
+                      {entry.preview ? (
+                        <img
+                          src={entry.preview}
+                          alt="thumb"
+                          className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-700 rounded-lg flex-shrink-0 flex items-center justify-center text-2xl">
+                          📷
+                        </div>
+                      )}
                       <div className="flex flex-col gap-1 overflow-hidden">
                         <p className="text-purple-400 text-sm font-semibold truncate">
                           🔍 {entry.query}
