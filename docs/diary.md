@@ -39,3 +39,13 @@
 [SmolAgents](https://www.youtube.com/watch?v=uzskhpH5fvo "Build Multi-Agents Systems with SmolAgents")
 - Tiempo: 26 min
 - Logros: Aprender sobre SmolAgents y cómo poder usarlo en mi proyecto.
+
+## Sesión 6 - 03/08/2026
+- Tiempo: 2h43min
+- Logros: Selector de modo imagen/webcam integrado en la card principal, componente WebcamCapture creado con captura de frames en tiempo real, 
+  nuevo endpoint /api/analyze-frame para frames en base64, overlay de bounding boxes en tiempo real sobre el video de la webcam, polling cada 
+  10 segundos para enviar frames al backend
+- Problemas encontrados: Rate limit de OpenAI agotado por polling bajo, video no estaba listo al capturar el primer frame y  añadí delay de 1s,
+  historial acumulaba entradas duplicadas por cada frame analizado
+- Próximos pasos: Estabilizar webcam, integrar smolagents como orquestador de herramientas
+  (recomendado por tutor)
