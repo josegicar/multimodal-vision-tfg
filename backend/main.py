@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 import cv2
 import numpy as np
 import os
@@ -125,33 +125,40 @@ async def analyze_frame(
     _, buffer = cv2.imencode('.jpg', img)
     image_base64 = base64.b64encode(buffer).decode('utf-8')
 
-    response = openai_client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "system",
-                "content": f"Eres un asistente visual que analiza imágenes de webcam en tiempo real. Responde siempre en este idioma: {language}. Sé conciso y directo."
-            },
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{image_base64}"
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"Eres un asistente visual que analiza imágenes de webcam en tiempo real. Responde siempre en este idioma: {language}. Sé conciso y directo."
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": f"Objetos detectados por YOLO: {detections}\n\nPregunta: {query}"
                         }
-                    },
-                    {
-                        "type": "text",
-                        "text": f"Objetos detectados por YOLO: {detections}\n\nPregunta: {query}"
-                    }
-                ]
-            }
-        ],
-        max_tokens=300
-    )
+                    ]
+                }
+            ],
+            max_tokens=300
+        )
+        answer = response.choices[0].message.content
+        
+    except RateLimitError:
+        answer = "Límite de peticiones alcanzado, espera un momento."
+    except Exception as e:
+        answer = f"Error en la API de OpenAI: {str(e)}"
 
     return {
-        "answer": response.choices[0].message.content,
-        "detections": detections
+        "answer": answer,
+        "detections": detections 
     }
