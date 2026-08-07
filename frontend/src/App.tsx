@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar'
 import { OverlayCanvas } from './components/OverlayCanvas'
 import { useLanguage } from './context/LanguageContext'
 import { WebcamCapture } from './components/WebcamCapture'
+import { Image as ImageIcon, Camera, Search, FolderOpen, Trash2 } from 'lucide-react'
 
 const API_URL = 'http://127.0.0.1:8000'
 
@@ -37,6 +38,11 @@ function App() {
   const [mode, setMode] = useState<'image' | 'webcam'>('image')
 
   const { language, t } = useLanguage()
+
+  const handleModeChange = (newMode: 'image' | 'webcam') => {
+    setMode(newMode)
+    setResult(null) // Limpiamos el resultado anterior para evitar el "hueco"
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -106,24 +112,27 @@ function App() {
             {/* Selector de modo */}
             <div className="flex rounded-xl overflow-hidden border border-gray-700">
               <button
-                onClick={() => setMode('image')}
-                className={`flex-1 py-2 text-sm font-semibold transition-all ${
+                onClick={() => handleModeChange('image')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold transition-all ${
                   mode === 'image'
                     ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
                     : 'bg-gray-800 text-gray-400 hover:text-white'
                 }`}
               >
-                🖼 Imagen
+                <ImageIcon size={18} />
+                <span>{t.imageMode}</span>
               </button>
+
               <button
-                onClick={() => setMode('webcam')}
-                className={`flex-1 py-2 text-sm font-semibold transition-all ${
+                onClick={() => handleModeChange('webcam')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold transition-all ${
                   mode === 'webcam'
                     ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
                     : 'bg-gray-800 text-gray-400 hover:text-white'
                 }`}
               >
-                📷 Webcam
+                <Camera size={18} />
+                <span>{t.webcamMode}</span>
               </button>
             </div>
 
@@ -131,10 +140,29 @@ function App() {
               <>
                 {/* Upload */}
                 <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-8 cursor-pointer hover:border-purple-500 transition-colors">
-                  <span className="text-4xl mb-2">📁</span>
-                  <span className="text-gray-400">
-                    {image ? image.name : t.upload}
-                  </span>
+                  <div className="mb-2 text-gray-400">
+                    <FolderOpen size={48} strokeWidth={1.5} />
+                  </div>
+                  {image ? (
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="text-purple-400 font-medium">{image.name}</span>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault() // Evita que se abra el selector de archivos de nuevo
+                          setImage(null)
+                          setPreview('')
+                          setResult(null)
+                        }}
+                        title={t.clearImage}
+                        className="p-2 bg-gray-800 hover:bg-red-600 rounded-lg text-gray-400 hover:text-white transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">{t.upload}</span>
+                  )}
+
                   <input
                     type="file"
                     accept="image/*"
@@ -269,21 +297,22 @@ function App() {
                         />
                       ) : (
                         <div className="w-16 h-16 bg-gray-700 rounded-lg flex-shrink-0 flex items-center justify-center text-2xl">
-                          📷
+                          <Camera size={24} className="text-gray-400" />
                         </div>
                       )}
                       <div className="flex flex-col gap-1 overflow-hidden">
-                        <p className="text-purple-400 text-sm font-semibold truncate">
-                          🔍 {entry.query}
-                        </p>
-                        <p className={`text-gray-300 text-xs ${expandedIndex === i ? '' : 'line-clamp-3'}`}>
+                        <div className="text-purple-400 text-sm font-semibold truncate flex items-center gap-2">
+                          <Search size={14} className="flex-shrink-0" />
+                          <span className="truncate">{entry.query}</span>
+                        </div>
+                        <div className={`text-gray-300 text-xs ${expandedIndex === i ? '' : 'line-clamp-3'}`}>
                           {entry.answer}
-                        </p>
-                        <p className="text-gray-500 text-xs mt-1">
+                        </div>
+                        <div className="text-gray-500 text-xs mt-1">
                           {entry.detections.length > 0
                             ? t.detectedObjects(entry.detections.length)
                             : t.noDetections}
-                        </p>
+                        </div>
                       </div>
                     </div>
 

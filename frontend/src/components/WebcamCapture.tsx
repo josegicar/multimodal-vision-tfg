@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
+import { Camera, Square } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext'
 import axios from 'axios'
 
@@ -22,7 +23,7 @@ interface Props {
 }
 
 export function WebcamCapture({ query, onResult }: Props) {
-  const { language } = useLanguage()
+  const { language, t } = useLanguage()
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const overlayRef = useRef<HTMLCanvasElement>(null)
@@ -34,6 +35,12 @@ export function WebcamCapture({ query, onResult }: Props) {
   const [videoReady, setVideoReady] = useState(false)
   const [error, setError] = useState('')
   const [detections, setDetections] = useState<Detection[]>([])
+
+  const requestRefs = useRef({ query, language, onResult })
+
+  useEffect(() => {
+    requestRefs.current = { query, language, onResult }
+  }, [query, language, onResult])
 
   // Dibuja bounding boxes sobre el overlay
   const drawOverlay = useCallback((dets: Detection[]) => {
@@ -68,9 +75,12 @@ export function WebcamCapture({ query, onResult }: Props) {
 
   // Captura un frame y lo envía al backend
   const analyzeFrame = useCallback(async () => {
-    if (!query || loading) return
+    const { query: currentQuery, language: currentLang, onResult: currentOnResult } = requestRefs.current
+
+    if (!currentQuery || loading) return
 
     const video = videoRef.current
+    if (!video || video.readyState < 2) return
     const canvas = canvasRef.current
     if (!video || !canvas) return
 
@@ -86,8 +96,8 @@ export function WebcamCapture({ query, onResult }: Props) {
     try {
       const formData = new FormData()
       formData.append('frame_base64', frameBase64)
-      formData.append('query', query)
-      formData.append('language', language)
+      formData.append('query', currentQuery)
+      formData.append('language', currentLang)
 
       const response = await axios.post<WebcamResult>(
         `${API_URL}/api/analyze-frame`,
@@ -96,28 +106,25 @@ export function WebcamCapture({ query, onResult }: Props) {
 
       setDetections(response.data.detections)
       drawOverlay(response.data.detections)
-      onResult(response.data)
+      currentOnResult(response.data)
     } catch {
-      setError('Error al analizar el frame')
+      setError(t.analyzeError)
     } finally {
       setLoading(false)
     }
-  }, [query, language, loading, drawOverlay, onResult])
+  }, [loading, drawOverlay, t.analyzeError])
 
   // Activa la webcam
   const startWebcam = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480 }
+        video: { width: 640, height: 480 , facingMode: "user" }
       })
       streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-      }
       setActive(true)
       setError('')
     } catch {
-      setError('No se pudo acceder a la webcam')
+      setError(t.webcamError)
     }
   }
 
@@ -135,22 +142,38 @@ export function WebcamCapture({ query, onResult }: Props) {
     }
   }
 
+  // Engancha el stream al vídeo
+  useEffect(() => {
+    if (active && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current
+    }
+  }, [active])
+
   // Arranca el polling cuando hay webcam activa y query escrita
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>
+
     if (active && query && videoReady) {
-      const timeout = setTimeout(() => {
+      timeoutId = setTimeout(() => {
         analyzeFrame()
         intervalRef.current = setInterval(analyzeFrame, POLLING_INTERVAL)
       }, 1000) // espera 1s antes del primer análisis
-      return () => clearTimeout(timeout)
     } else {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-      intervalRef.current = null
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
     }
+
+    // Limpieza global y segura
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (timeoutId) clearTimeout(timeoutId)
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
     }
-  }, [active, query, analyzeFrame])
+  }, [active, query, videoReady, analyzeFrame])
 
   // Limpia al desmontar
   useEffect(() => {
@@ -163,13 +186,23 @@ export function WebcamCapture({ query, onResult }: Props) {
       {/* Botón activar/desactivar */}
       <button
         onClick={active ? stopWebcam : startWebcam}
-        className={`w-full py-3 rounded-xl font-semibold text-white transition-all ${
+        className={`w-full py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ${
           active
             ? 'bg-red-600 hover:bg-red-700'
             : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
         }`}
       >
-        {active ? '⏹ Detener webcam' : '📷 Activar webcam'}
+        {active ? (
+          <>
+            <Square size={18} fill="currentColor" />
+            <span>{t.stopWebcam}</span>
+          </>
+        ) : (
+          <>
+            <Camera size={18} />
+            <span>{t.startWebcam}</span>
+          </>
+        )}
       </button>
 
       {error && <p className="text-red-400 text-sm text-center">{error}</p>}
@@ -191,7 +224,7 @@ export function WebcamCapture({ query, onResult }: Props) {
           />
           {loading && (
             <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg">
-              Analizando...
+              {t.analyzing}
             </div>
           )}
         </div>
@@ -203,7 +236,7 @@ export function WebcamCapture({ query, onResult }: Props) {
       {/* Detecciones actuales */}
       {active && detections.length > 0 && (
         <div className="bg-gray-800 rounded-xl p-4">
-          <h3 className="text-blue-400 font-semibold mb-2 text-sm">Detecciones</h3>
+          <h3 className="text-blue-400 font-semibold mb-2 text-sm">{t.detections}</h3>
           <ul className="flex flex-col gap-1">
             {detections.map((det, i) => (
               <li key={i} className="flex justify-between text-xs text-gray-300">
