@@ -36,6 +36,10 @@ function App() {
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
   const [mode, setMode] = useState<'image' | 'webcam'>('image')
+  const [conversationMode, setConversationMode] = useState(false)
+  const [conversationHistory, setConversationHistory] = useState<string>('[]')
+  const [webcamTrigger, setWebcamTrigger] = useState(0)
+  const [isWebcamActive, setIsWebcamActive] = useState(false)
 
   const { language, t } = useLanguage()
 
@@ -60,16 +64,30 @@ function App() {
 
     try {
       const formData = new FormData()
-      formData.append('image', image)
       formData.append('query', query)
       formData.append('language', language)
 
-      const response = await axios.post<AnalyzeResponse>(
-        `${API_URL}/api/analyze`,
-        formData
-      )
-      setResult(response.data)
+      let response
 
+      if (conversationMode) {
+        formData.append('image', image)
+        formData.append('history', conversationHistory)
+
+        response = await axios.post<AnalyzeResponse & { history: string }>(
+          `${API_URL}/api/chat`,
+          formData
+        )
+        // Actualizar historial con el devuelto por el backend
+        setConversationHistory(response.data.history)
+      } else {
+        formData.append('image', image)
+        response = await axios.post<AnalyzeResponse>(
+          `${API_URL}/api/analyze`,
+          formData
+        )
+      }
+
+      setResult(response.data)
       setHistory(prev => [{
         query,
         answer: response.data.answer,
@@ -78,21 +96,21 @@ function App() {
       }, ...prev])
 
       setQuery('')
-      
+
     } catch (err) {
       console.error(err)
-      setError('Error al conectar con el backend')
+      setError(t.error)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center px-4 py-12">
+    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center px-4 py-8">
 
       <Navbar />
 
-      <div className="flex flex-col items-center px-4 py-12">
+      <div className="flex flex-col items-center px-4 py-8 w-full mt-4">
         {/* Header */}
         <div className="mb-10 text-center">
           <h1 className="text-5xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
@@ -104,10 +122,13 @@ function App() {
         </div>
 
         {/* Layout — card centrada + historial fijo a la derecha */}
-        <div className="w-full max-w-6xl flex justify-center relative">
+        <div className="w-full max-w-[1400px] flex gap-6 items-start justify-center">
+
+          {/* Espaciador invisible para centrar la card */}
+          <div className="w-80 flex-shrink-0 invisible hidden lg:block" />
 
           {/* Card principal centrada */}
-          <div className="w-full max-w-2xl bg-gray-900 rounded-2xl shadow-xl p-8 flex flex-col gap-6">
+          <div className="w-full max-w-2xl bg-gray-900 rounded-2xl shadow-xl p-6 flex flex-col gap-4 z-10">
 
             {/* Selector de modo */}
             <div className="flex rounded-xl overflow-hidden border border-gray-700">
@@ -133,6 +154,27 @@ function App() {
               >
                 <Camera size={18} />
                 <span>{t.webcamMode}</span>
+              </button>
+            </div>
+
+            {/* Toggle modo conversación */}
+            <div className="flex items-center justify-between bg-gray-800 rounded-xl px-4 py-3">
+              <div className="flex flex-col">
+                <span className="text-white text-sm font-semibold">{t.conversationMode}</span>
+                <span className="text-gray-400 text-xs">{t.conversationModeDesc}</span>
+              </div>
+              <button
+                onClick={() => {
+                  setConversationMode(!conversationMode)
+                  setConversationHistory('[]') // resetea al cambiar modo
+                }}
+                className={`w-12 h-6 rounded-full transition-all ${
+                  conversationMode ? 'bg-purple-500' : 'bg-gray-600'
+                }`}
+              >
+                <div className={`w-5 h-5 bg-white rounded-full transition-all mx-0.5 ${
+                  conversationMode ? 'translate-x-6' : 'translate-x-0'
+                }`} />
               </button>
             </div>
 
@@ -229,25 +271,59 @@ function App() {
               </>
             ) : (
               <>
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={t.placeholder}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      // Disparar solo si presionas Enter en modo conversación
+                      if (e.key === 'Enter' && query && conversationMode && isWebcamActive) {
+                        setWebcamTrigger(prev => prev + 1)
+                      }
+                    }}
+                    placeholder={t.placeholder}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                  />
+                  
+                  {/* Botón opcional para enviar manualmente en modo conversación */}
+                  {conversationMode && (
+                    <span 
+                      title={!isWebcamActive ? t.activateCameraTooltip : ""}
+                      className={!isWebcamActive ? "cursor-not-allowed" : ""}
+                    >
+                      <button
+                        onClick={() => setWebcamTrigger(prev => prev + 1)}
+                        disabled={!query || loading || !isWebcamActive}
+                        className={`px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-40 transition-all flex-shrink-0 ${
+                          (!query || loading || !isWebcamActive) ? 'pointer-events-none' : ''
+                        }`}
+                      >
+                        {t.send}
+                      </button>
+                    </span>
+                  )}
+                </div>
 
                 <WebcamCapture
                   query={query}
+                  conversationMode={conversationMode}
+                  conversationHistory={conversationHistory}
+                  trigger={webcamTrigger}
+                  onActiveChange={setIsWebcamActive}
                   onResult={(r) => {
                     setResult(r)
+                    if (r.history) setConversationHistory(r.history)
                     if (query) {
-                      setHistory(prev => [{
-                        query,
-                        answer: r.answer,
-                        preview: '',
-                        detections: r.detections
-                      }, ...prev])
+                      setHistory(prev => {
+                        if (prev[0]?.answer === r.answer) return prev
+                        return [{
+                          query,
+                          answer: r.answer,
+                          preview: r.frameBase64 || '',
+                          detections: r.detections
+                        }, ...prev]
+                      })
                     }
                   }}
                 />
@@ -265,12 +341,15 @@ function App() {
           </div>
 
           {/* Historial fijo a la derecha sin afectar el centro */}
-          <div className="absolute left-full ml-6 w-72 flex flex-col gap-4 top-0">
+          <div className="w-80 flex-shrink-0 flex flex-col gap-2">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-300">{t.history}</h2>
               {history.length > 0 && (
                 <button
-                  onClick={() => setHistory([])}
+                  onClick={() => {
+                    setHistory([])
+                    setConversationHistory('[]')
+                  }}
                   className="text-sm text-red-400 hover:text-red-300 transition-colors"
                 >
                   {t.clear}

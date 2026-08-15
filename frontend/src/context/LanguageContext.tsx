@@ -15,6 +15,10 @@ const languages = {
     clear: 'Limpiar',
     noDetections: 'Sin objetos detectables por YOLO',
     historyEmpty: 'Las consultas aparecerán aquí',
+    conversationMode: 'Modo conversación',
+    conversationModeDesc: 'Recuerda preguntas anteriores',
+    send: 'Enviar',
+    activateCameraTooltip: 'Debes activar la cámara',
     title: 'Asistente Virtual',
     subtitle: 'Sube una imagen y pregunta lo que quieras',
     error: 'Error al conectar con el backend',
@@ -43,6 +47,10 @@ const languages = {
     clear: 'Clear',
     noDetections: 'No detectable objects by YOLO',
     historyEmpty: 'Queries will appear here',
+    conversationMode: 'Conversation mode',
+    conversationModeDesc: 'Remembers previous questions',
+    send: 'Send',
+    activateCameraTooltip: 'You must activate the camera',
     title: 'Virtual Assistant',
     subtitle: 'Upload an image and ask anything',
     error: 'Error connecting to backend',
@@ -71,6 +79,10 @@ const languages = {
     clear: 'Effacer',
     noDetections: 'Aucun objet détectable par YOLO',
     historyEmpty: 'Les requêtes apparaîtront ici',
+    conversationMode: 'Mode conversation',
+    conversationModeDesc: 'Se souvient des questions précédentes',
+    send: 'Envoyer',
+    activateCameraTooltip: 'Vous devez activer la caméra',
     title: 'Assistant Virtuel',
     subtitle: 'Téléchargez une image et posez vos questions',
     error: 'Erreur de connexion au backend',
@@ -99,6 +111,10 @@ const languages = {
     clear: 'Löschen',
     noDetections: 'Keine erkennbaren Objekte durch YOLO',
     historyEmpty: 'Anfragen werden hier angezeigt',
+    conversationMode: 'Gesprächsmodus',
+    conversationModeDesc: 'Erinnert sich an frühere Fragen',
+    send: 'Senden',
+    activateCameraTooltip: 'Sie müssen die Kamera aktivieren',
     title: 'Virtueller Assistent',
     subtitle: 'Laden Sie ein Bild hoch und fragen Sie alles',
     error: 'Fehler beim Verbinden mit dem Backend',
@@ -127,6 +143,10 @@ const languages = {
     clear: 'Cancella',
     noDetections: 'Nessun oggetto rilevabile da YOLO',
     historyEmpty: 'Le query appariranno qui',
+    conversationMode: 'Modalità conversazione',
+    conversationModeDesc: 'Ricorda le domande precedenti',
+    send: 'Invia',
+    activateCameraTooltip: 'Devi attivare la fotocamera',
     title: 'Assistente Virtuale',
     subtitle: 'Carica un\'immagine e chiedi qualsiasi cosa',
     error: 'Errore di connessione al backend',
@@ -155,6 +175,10 @@ const languages = {
     clear: 'Limpar',
     noDetections: 'Nenhum objeto detectável pelo YOLO',
     historyEmpty: 'As consultas aparecerão aqui',
+    conversationMode: 'Modo conversa',
+    conversationModeDesc: 'Lembra perguntas anteriores',
+    send: 'Enviar',
+    activateCameraTooltip: 'Você deve ativar a câmera',
     title: 'Assistente Virtual',
     subtitle: 'Envie uma imagem e pergunte qualquer coisa',
     error: 'Erro ao conectar com o backend',
@@ -184,12 +208,20 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | null>(null)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<LanguageCode>('es')
+  const [language, setLanguage] = useState<LanguageCode>(() => {
+    const saved = localStorage.getItem('language')
+    return (saved as LanguageCode) || 'es'
+  })
+
+  const handleSetLanguage = (lang: LanguageCode) => {
+    setLanguage(lang)
+    localStorage.setItem('language', lang)
+  }
 
   return (
     <LanguageContext.Provider value={{
       language,
-      setLanguage,
+      setLanguage: handleSetLanguage,
       t: languages[language],
       allLanguages: languages,
     }}>

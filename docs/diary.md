@@ -49,3 +49,30 @@
   historial acumulaba entradas duplicadas por cada frame analizado
 - Próximos pasos: Estabilizar webcam, integrar smolagents como orquestador de herramientas
   (recomendado por tutor)
+
+## Sesión 7 — 05/08/2026
+- Tiempo: 3h28min
+- Logros: Webcam estable con polling cada 3 segundos, bounding boxes de YOLO sobre 
+  el video en directo, historial funcionando correctamente con entradas cada 3 segundos,
+  internacionalización completa de todos los textos de la webcam, iconos con lucide-react,
+  manejo de rate limit de OpenAI, release v0.2.0 publicada
+- Problemas encontrados: Rate limit de OpenAI agotado por polling demasiado agresivo,
+  video no preparado al capturar primer frame
+- Próximos pasos: Memoria conversacional entre preguntas, docker básico y análisis de color
+
+## Sesión 8 - 10/08/2026
+- Tiempo: 3h02min
+- Logros: Ánalisis de color HSV, inicio del desarrollo de la memoria conversacional y preparación inicial del entorno con Docker.
+- Problemas encontrados: La memoria conversacional no llegó a funcionar del todo de forma fluida.
+
+## Sesión 9 — 15/08/2026
+- Tiempo: 4h32min
+- Logros: Memoria conversacional con /api/chat, detección de preguntas sobre el pasado para 
+  no mandar imagen actual, modo conversación con trigger manual en webcam, foto del frame guardada
+  en historial, historial centrado con card principal, Docker funcionando con docker-compose, localStorage 
+  para recordar idioma y arreglos de la IU.
+- Problemas encontrados: libgl1-mesa-glx obsoleto en Debian trixie, 
+  env_file mal configurado en docker-compose, LLM priorizaba imagen actual 
+  sobre historial resuelto detectando keywords de tiempo pasado
+- Próximos pasos: Reconocimiento de voz (Whisper STT), síntesis de voz (Coqui TTS), servicio de
+  audio separado, WebSockets o Smolagents

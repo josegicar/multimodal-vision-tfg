@@ -15,14 +15,19 @@ interface Detection {
 interface WebcamResult {
   answer: string
   detections: Detection[]
+  frameBase64: string
 }
 
 interface Props {
   query: string
-  onResult: (result: WebcamResult) => void
+  conversationMode: boolean
+  conversationHistory: string
+  trigger: number
+  onResult: (result: WebcamResult & { history?: string }) => void
+  onActiveChange?: (isActive: boolean) => void
 }
 
-export function WebcamCapture({ query, onResult }: Props) {
+export function WebcamCapture({ query, conversationMode, conversationHistory, trigger, onResult, onActiveChange }: Props) {
   const { language, t } = useLanguage()
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -36,11 +41,11 @@ export function WebcamCapture({ query, onResult }: Props) {
   const [error, setError] = useState('')
   const [detections, setDetections] = useState<Detection[]>([])
 
-  const requestRefs = useRef({ query, language, onResult })
+  const requestRefs = useRef({ query, language, conversationMode, conversationHistory, trigger, onResult, onActiveChange})
 
   useEffect(() => {
-    requestRefs.current = { query, language, onResult }
-  }, [query, language, onResult])
+    requestRefs.current = { query, language, conversationMode, conversationHistory, trigger, onResult, onActiveChange }
+  }, [query, language, conversationMode, conversationHistory, trigger, onResult, onActiveChange])
 
   // Dibuja bounding boxes sobre el overlay
   const drawOverlay = useCallback((dets: Detection[]) => {
@@ -75,7 +80,13 @@ export function WebcamCapture({ query, onResult }: Props) {
 
   // Captura un frame y lo envía al backend
   const analyzeFrame = useCallback(async () => {
-    const { query: currentQuery, language: currentLang, onResult: currentOnResult } = requestRefs.current
+    const { 
+    query: currentQuery, 
+    language: currentLang, 
+    onResult: currentOnResult,
+    conversationMode: currentConvMode,
+    conversationHistory: currentHistory
+  } = requestRefs.current
 
     if (!currentQuery || loading) return
 
@@ -92,6 +103,9 @@ export function WebcamCapture({ query, onResult }: Props) {
     ctx.drawImage(video, 0, 0)
     const frameBase64 = canvas.toDataURL('image/jpeg', 0.7)
 
+    console.log('Modo conversación:', currentConvMode)
+    console.log('Historial enviado:', currentHistory)
+
     setLoading(true)
     try {
       const formData = new FormData()
@@ -99,14 +113,24 @@ export function WebcamCapture({ query, onResult }: Props) {
       formData.append('query', currentQuery)
       formData.append('language', currentLang)
 
-      const response = await axios.post<WebcamResult>(
-        `${API_URL}/api/analyze-frame`,
-        formData
-      )
+      let response
+
+      if (currentConvMode) {
+        formData.append('history', currentHistory)
+        response = await axios.post<WebcamResult & { history?: string }>(
+          `${API_URL}/api/chat`,
+          formData
+        )
+      } else {
+        response = await axios.post<WebcamResult>(
+          `${API_URL}/api/analyze-frame`,
+          formData
+        )
+      }
 
       setDetections(response.data.detections)
       drawOverlay(response.data.detections)
-      currentOnResult(response.data)
+      currentOnResult({ ...response.data, frameBase64 })
     } catch {
       setError(t.analyzeError)
     } finally {
@@ -149,31 +173,42 @@ export function WebcamCapture({ query, onResult }: Props) {
     }
   }, [active])
 
+  // Avisa a App.tsx cuando 'active' cambie
+  useEffect(() => {
+    if (onActiveChange) {
+      onActiveChange(active)
+    }
+  }, [active, onActiveChange])
+
   // Arranca el polling cuando hay webcam activa y query escrita
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>
-
-    if (active && query && videoReady) {
+    
+    if (active && query && videoReady && !conversationMode) {
       timeoutId = setTimeout(() => {
         analyzeFrame()
         intervalRef.current = setInterval(analyzeFrame, POLLING_INTERVAL)
-      }, 1000) // espera 1s antes del primer análisis
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
+      }, 1000)
     }
 
-    // Limpieza global y segura
     return () => {
       if (timeoutId) clearTimeout(timeoutId)
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [active, query, videoReady, analyzeFrame])
+  }, [active, query, videoReady, conversationMode, analyzeFrame])
+
+  // Modo conversación
+  useEffect(() => {
+    if (trigger > 0 && active && videoReady && conversationMode) {
+      const timerId = setTimeout(() => {
+        analyzeFrame()
+      }, 0)
+
+      return () => clearTimeout(timerId)
+    }
+    // Silenciamos el linter porque solo queremos escuchar a 'trigger'
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trigger])
 
   // Limpia al desmontar
   useEffect(() => {

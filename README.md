@@ -3,17 +3,38 @@ Proyecto de TFG centrado en la creación de un agente multimodal con FastAPI y R
 
 ## Estado actual
 - ✅ Fase 0 — Asistente visual con imagen estática
-- 🔄 Fase 1 — Webcam en tiempo real (en progreso)
+- ✅ Fase 1 — Webcam en tiempo real
+- 🔄 Fase 2 — Multimodal completo (en progreso)
 
 ## Stack
 - **Backend**: FastAPI + YOLOv8 + GPT-4o Vision
 - **Frontend**: React 19 + TypeScript + Tailwind CSS v4
+- **Infraestructura**: Docker + Docker Compose
 
 ## Requisitos previos
 - Python 3.10+
 - Node.js 18+
+- Cuenta de OpenAI con créditos y API key
+- Docker Desktop (opcional)
 
-# Primeros pasos
+## Características
+- ✅ Análisis de imágenes con YOLOv8 + GPT-4o Vision
+- ✅ Bounding boxes sobre objetos detectados
+- ✅ Webcam en tiempo real con overlays visuales
+- ✅ Memoria conversacional entre preguntas
+- ✅ Análisis de colores dominantes con HSV
+- ✅ Historial de consultas con miniaturas
+- ✅ Soporte multiidioma (ES, EN, FR, DE, IT, PT)
+- ✅ Selector de idioma persistente
+
+## Endpoints disponibles
+- `GET  /` — Estado de la API
+- `POST /api/analyze` — Analiza imagen estática
+- `POST /api/analyze-frame` — Analiza frame de webcam
+- `POST /api/analyze-color` — Análisis de colores HSV
+- `POST /api/chat` — Chat con memoria conversacional
+
+# Primeros pasos (siempre empezar desde la raíz del proyecto)
 
 ### 1. Preparar el Entorno Virtual
 Es recomendable usar un entorno virtual para mantener las dependencias aisladas.
@@ -45,7 +66,9 @@ Genera el archivo requirements.txt para facilitar la reproducibilidad del proyec
 pip freeze > requirements.txt
 ```
 
-### 4. Clonar el repositorio
+# Instalación
+
+### 1. Clonar el repositorio
 Clona el repositorio y edita las variables de entorno en .env
 
 ```bash
@@ -53,7 +76,7 @@ git clone https://github.com/josegicar/multimodal-vision-tfg.git
 cd multimodal-vision-tfg
 ```
 
-### 5. Modificaciones para cada área de trabajo
+### 2. Modificaciones para cada área de trabajo
 
 ```bash
 # Extrae el archivo .env.example como .env a la raíz de tu proyecto y edita las variables:
@@ -82,3 +105,16 @@ cd frontend
 npm install # Instalar módulos la primera vez
 npm run dev
 ```
+
+# Arranque con Docker
+```bash
+docker-compose up --build
+```
+
+## Acceso
+- Frontend: http://localhost:5173
+- Backend docs: http://127.0.0.1:8000/docs
+
+## Notas
+- El modelo `yolov8n.pt` se descarga automáticamente en el primer arranque
+- No se sube el archivo `.env` al repositorio
