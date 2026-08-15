@@ -49,3 +49,13 @@
   historial acumulaba entradas duplicadas por cada frame analizado
 - Próximos pasos: Estabilizar webcam, integrar smolagents como orquestador de herramientas
   (recomendado por tutor)
+
+## Sesión 7 — 05/08/2026
+- Tiempo: 3h28min
+- Logros: Webcam estable con polling cada 3 segundos, bounding boxes de YOLO sobre 
+  el video en directo, historial funcionando correctamente con entradas cada 3 segundos,
+  internacionalización completa de todos los textos de la webcam, iconos con lucide-react,
+  manejo de rate limit de OpenAI, release v0.2.0 publicada
+- Problemas encontrados: Rate limit de OpenAI agotado por polling demasiado agresivo,
+  video no preparado al capturar primer frame
+- Próximos pasos: Memoria conversacional entre preguntas, docker básico y análisis de color
