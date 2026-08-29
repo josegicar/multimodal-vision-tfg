@@ -76,3 +76,14 @@
   sobre historial resuelto detectando keywords de tiempo pasado
 - Próximos pasos: Reconocimiento de voz (Whisper STT), síntesis de voz (Coqui TTS), servicio de
   audio separado, WebSockets o Smolagents
+
+## Sesión 10 — 29/08/2026
+- Tiempo: 2h25min
+- Logros: Whisper STT integrado con faster-whisper, componente AudioInput con 
+  botón de micrófono junto al input de texto, transcripción automática al soltar 
+  el botón, textarea auto-redimensionable con scrollbar oculto, política de ramas 
+  Git Flow simplificado documentada en CONTRIBUTING.md con rama develop
+- Problemas encontrados: faster-whisper no instalado en Docker al no actualizar 
+  requirements.txt, permisos de micrófono bloqueados en el navegador, scrollbar 
+  nativo del textarea con aspecto feo resuelto con CSS
+- Próximos pasos: smolagents como orquestador, TTS
