@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar'
 import { OverlayCanvas } from './components/OverlayCanvas'
 import { useLanguage } from './context/LanguageContext'
 import { WebcamCapture } from './components/WebcamCapture'
+import { AudioInput } from './components/AudioInput'
 import { Image as ImageIcon, Camera, Search, FolderOpen, Trash2 } from 'lucide-react'
 
 const API_URL = 'http://127.0.0.1:8000'
@@ -38,6 +39,7 @@ function App() {
   const [mode, setMode] = useState<'image' | 'webcam'>('image')
   const [conversationMode, setConversationMode] = useState(false)
   const [conversationHistory, setConversationHistory] = useState<string>('[]')
+  const [audioLoading, setAudioLoading] = useState(false)
   const [webcamTrigger, setWebcamTrigger] = useState(0)
   const [isWebcamActive, setIsWebcamActive] = useState(false)
 
@@ -45,7 +47,7 @@ function App() {
 
   const handleModeChange = (newMode: 'image' | 'webcam') => {
     setMode(newMode)
-    setResult(null) // Limpiamos el resultado anterior para evitar el "hueco"
+    setResult(null)
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,7 +79,6 @@ function App() {
           `${API_URL}/api/chat`,
           formData
         )
-        // Actualizar historial con el devuelto por el backend
         setConversationHistory(response.data.history)
       } else {
         formData.append('image', image)
@@ -190,7 +191,7 @@ function App() {
                       <span className="text-purple-400 font-medium">{image.name}</span>
                       <button
                         onClick={(e) => {
-                          e.preventDefault() // Evita que se abra el selector de archivos de nuevo
+                          e.preventDefault()
                           setImage(null)
                           setPreview('')
                           setResult(null)
@@ -224,14 +225,24 @@ function App() {
                   <OverlayCanvas imageUrl={preview} detections={result.detections} />
                 )}
 
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                  placeholder={t.placeholder}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
-                />
+                <div className="flex gap-2">
+                  <textarea
+                    value={query}
+                    onChange={(e) => {
+                      setQuery(e.target.value)
+                      e.target.style.height = 'auto'
+                      e.target.style.height = e.target.scrollHeight + 'px'
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                    placeholder={audioLoading ? t.transcribing : t.placeholder}
+                    rows={1}
+                    className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors resize-none overflow-hidden-y-auto max-h-32"
+                  />
+                  <AudioInput 
+                    onTranscription={(text) => setQuery(text)}
+                    onLoadingChange={(loading) => setAudioLoading(loading)}
+                  />
+                </div>
 
                 <button
                   onClick={handleSubmit}
@@ -272,18 +283,25 @@ function App() {
             ) : (
               <>
                 <div className="flex gap-2">
-                  <input
-                    type="text"
+                  <textarea
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(e) => {
+                      setQuery(e.target.value)
+                      e.target.style.height = 'auto'
+                      e.target.style.height = e.target.scrollHeight + 'px'
+                    }}
                     onKeyDown={(e) => {
-                      // Disparar solo si presionas Enter en modo conversación
                       if (e.key === 'Enter' && query && conversationMode && isWebcamActive) {
                         setWebcamTrigger(prev => prev + 1)
                       }
                     }}
-                    placeholder={t.placeholder}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                    placeholder={audioLoading ? t.transcribing : t.placeholder}
+                    rows={1}
+                    className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors resize-none overflow-y-auto max-h-32"
+                  />
+                  <AudioInput 
+                    onTranscription={(text) => setQuery(text)}
+                    onLoadingChange={(loading) => setAudioLoading(loading)}
                   />
                   
                   {/* Botón opcional para enviar manualmente en modo conversación */}

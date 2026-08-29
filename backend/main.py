@@ -1,11 +1,14 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
+from faster_whisper import WhisperModel
 from openai import OpenAI, RateLimitError
+import tempfile
 import cv2
 import numpy as np
 import os
 import base64
+import asyncio
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -21,6 +24,7 @@ app.add_middleware(
 
 # Cargar modelos al arrancar
 yolo_model = YOLO("yolov8n.pt")
+whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
 api_key = os.getenv("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=api_key)
 
@@ -396,3 +400,30 @@ INSTRUCCIONES CLAVE:
         "detections": detections,
         "history": json.dumps(conversation_history)
     }
+    
+@app.post("/api/stt/transcribe")
+async def transcribe_audio(
+    audio: UploadFile = File(...),
+):
+    ext = os.path.splitext(audio.filename)[1] if audio.filename else ".webm"
+    
+    with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
+        tmp.write(await audio.read())
+        tmp_path = tmp.name
+
+    try:
+        def run_transcription():
+            segments, info = whisper_model.transcribe(tmp_path)
+            transcribed_text = " ".join([segment.text for segment in segments])
+            return transcribed_text, info.language
+
+        text, detected_language = await asyncio.to_thread(run_transcription)
+
+        return {
+            "text": text.strip(),
+            "language": detected_language
+        }
+    except Exception as e:
+        return {"error": str(e), "text": ""}
+    finally:
+        os.unlink(tmp_path)
