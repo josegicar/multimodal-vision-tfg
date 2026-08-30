@@ -88,8 +88,8 @@
   nativo del textarea con aspecto feo resuelto con CSS
 - Próximos pasos: smolagents como orquestador, TTS
 
-## Sesión 11 — 26/08/2026
-- Tiempo: Xmin (rellena con Clockify)
+## Sesión 11 — 30/08/2026
+- Tiempo: 6h10min
 - Logros: TTS integrado con edge-tts y componente AudioOutput con voces en 
   6 idiomas, botón de audio en respuestas e historial, renombrado a Asistente 
   Mini con título de pestaña fijo, subtítulo actualizado, textarea 
