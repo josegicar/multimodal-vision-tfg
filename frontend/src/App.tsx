@@ -1,13 +1,13 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import axios from 'axios'
+import { API_URL } from './config'
 import { Navbar } from './components/Navbar'
 import { OverlayCanvas } from './components/OverlayCanvas'
 import { useLanguage } from './context/LanguageContext'
 import { WebcamCapture } from './components/WebcamCapture'
 import { AudioInput } from './components/AudioInput'
+import { AudioOutput } from './components/AudioOutput'
 import { Image as ImageIcon, Camera, Search, FolderOpen, Trash2 } from 'lucide-react'
-
-const API_URL = 'http://127.0.0.1:8000'
 
 interface Detection {
   class: string
@@ -44,6 +44,20 @@ function App() {
   const [isWebcamActive, setIsWebcamActive] = useState(false)
 
   const { language, t } = useLanguage()
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    document.title = 'Mini'
+  }, [t.title])
+
+  useEffect(() => {
+    const el = textareaRef.current
+    if (el) {
+      el.style.height = 'auto'
+      el.style.height = el.scrollHeight + 'px'
+    }
+  }, [query, mode])
 
   const handleModeChange = (newMode: 'image' | 'webcam') => {
     setMode(newMode)
@@ -100,7 +114,11 @@ function App() {
 
     } catch (err) {
       console.error(err)
-      setError(t.error)
+      if (axios.isAxiosError(err) && err.response?.status === 400) {
+        setError(t.queryTooLong)
+      } else {
+        setError(t.error)
+      }
     } finally {
       setLoading(false)
     }
@@ -113,7 +131,7 @@ function App() {
 
       <div className="flex flex-col items-center px-4 py-8 w-full mt-4">
         {/* Header */}
-        <div className="mb-10 text-center">
+        <div className="mb-4 text-center">
           <h1 className="text-5xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
             {t.title}
           </h1>
@@ -169,7 +187,7 @@ function App() {
                   setConversationMode(!conversationMode)
                   setConversationHistory('[]') // resetea al cambiar modo
                 }}
-                className={`w-12 h-6 rounded-full transition-all ${
+                className={`mb-1 w-12 h-6 rounded-full transition-all ${
                   conversationMode ? 'bg-purple-500' : 'bg-gray-600'
                 }`}
               >
@@ -182,9 +200,9 @@ function App() {
             {mode === 'image' ? (
               <>
                 {/* Upload */}
-                <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-8 cursor-pointer hover:border-purple-500 transition-colors">
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 cursor-pointer hover:border-purple-500 transition-colors">
                   <div className="mb-2 text-gray-400">
-                    <FolderOpen size={48} strokeWidth={1.5} />
+                    <FolderOpen size={32} strokeWidth={1.5} />
                   </div>
                   {image ? (
                     <div className="flex items-center gap-3 mt-2">
@@ -225,21 +243,19 @@ function App() {
                   <OverlayCanvas imageUrl={preview} detections={result.detections} />
                 )}
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-end">
                   <textarea
+                    ref={textareaRef}
                     value={query}
-                    onChange={(e) => {
-                      setQuery(e.target.value)
-                      e.target.style.height = 'auto'
-                      e.target.style.height = e.target.scrollHeight + 'px'
-                    }}
+                    onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                     placeholder={audioLoading ? t.transcribing : t.placeholder}
                     rows={1}
+                    maxLength={1000}
                     className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors resize-none overflow-hidden-y-auto max-h-32"
                   />
                   <AudioInput 
-                    onTranscription={(text) => setQuery(text)}
+                    onTranscription={(text) => setQuery(prev => prev ? `${prev} ${text}` : text)}
                     onLoadingChange={(loading) => setAudioLoading(loading)}
                   />
                 </div>
@@ -252,12 +268,15 @@ function App() {
                   {loading ? t.analyzing : t.analyze}
                 </button>
 
-                {error && <p className="text-red-400 text-center">{t.error}</p>}
+                {error && <p className="text-red-400 text-center">{error}</p>}
 
                 {result && (
                   <div className="bg-gray-800 rounded-xl p-6 flex flex-col gap-4">
                     <div>
-                      <h3 className="text-purple-400 font-semibold mb-1">{t.response}</h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-purple-400 font-semibold">{t.response}</h3>
+                        <AudioOutput text={result.answer} />
+                      </div>
                       <p className="text-gray-200">{result.answer}</p>
                     </div>
                     <div>
@@ -282,14 +301,11 @@ function App() {
               </>
             ) : (
               <>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-end">
                   <textarea
+                    ref={textareaRef}
                     value={query}
-                    onChange={(e) => {
-                      setQuery(e.target.value)
-                      e.target.style.height = 'auto'
-                      e.target.style.height = e.target.scrollHeight + 'px'
-                    }}
+                    onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && query && conversationMode && isWebcamActive) {
                         setWebcamTrigger(prev => prev + 1)
@@ -297,10 +313,11 @@ function App() {
                     }}
                     placeholder={audioLoading ? t.transcribing : t.placeholder}
                     rows={1}
+                    maxLength={1000}
                     className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors resize-none overflow-y-auto max-h-32"
                   />
                   <AudioInput 
-                    onTranscription={(text) => setQuery(text)}
+                    onTranscription={(text) => setQuery(prev => prev ? `${prev} ${text}` : text)}
                     onLoadingChange={(loading) => setAudioLoading(loading)}
                   />
                   
@@ -313,7 +330,7 @@ function App() {
                       <button
                         onClick={() => setWebcamTrigger(prev => prev + 1)}
                         disabled={!query || loading || !isWebcamActive}
-                        className={`px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-40 transition-all flex-shrink-0 ${
+                        className={`h-12 px-6 flex items-center justify-center rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-40 transition-all flex-shrink-0 ${
                           (!query || loading || !isWebcamActive) ? 'pointer-events-none' : ''
                         }`}
                       >
@@ -349,7 +366,10 @@ function App() {
                 {result && mode === 'webcam' && (
                   <div className="bg-gray-800 rounded-xl p-6 flex flex-col gap-4">
                     <div>
-                      <h3 className="text-purple-400 font-semibold mb-1">{t.response}</h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-purple-400 font-semibold">{t.response}</h3>
+                        <AudioOutput text={result.answer} />
+                      </div>
                       <p className="text-gray-200">{result.answer}</p>
                     </div>
                   </div>
@@ -368,7 +388,7 @@ function App() {
                     setHistory([])
                     setConversationHistory('[]')
                   }}
-                  className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                  className="text-sm text-red-500 hover:text-red-300 transition-colors"
                 >
                   {t.clear}
                 </button>
@@ -401,6 +421,9 @@ function App() {
                         <div className="text-purple-400 text-sm font-semibold truncate flex items-center gap-2">
                           <Search size={14} className="flex-shrink-0" />
                           <span className="truncate">{entry.query}</span>
+                          <div className="ml-auto flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <AudioOutput text={entry.answer} />
+                          </div>
                         </div>
                         <div className={`text-gray-300 text-xs ${expandedIndex === i ? '' : 'line-clamp-3'}`}>
                           {entry.answer}

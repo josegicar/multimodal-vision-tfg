@@ -50,7 +50,7 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### 2. Instalar dependencias
+### 2. Instalar dependencias dentro del proyecto
 Instala las librerias necesarias.
 
 ```bash

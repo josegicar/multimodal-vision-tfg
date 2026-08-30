@@ -1,9 +1,8 @@
 import { useState, useRef } from 'react'
 import { Mic, Square } from 'lucide-react'
+import { API_URL } from '../config'
 import { useLanguage } from '../context/LanguageContext'
 import axios from 'axios'
-
-const API_URL = 'http://127.0.0.1:8000'
 
 interface Props {
   onTranscription: (text: string) => void
@@ -11,7 +10,7 @@ interface Props {
 }
 
 export function AudioInput({ onTranscription, onLoadingChange }: Props) {
-  const { t } = useLanguage()
+  const { language, t } = useLanguage()
   const [recording, setRecording] = useState(false)
   const [loading, setLoading] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -56,6 +55,7 @@ export function AudioInput({ onTranscription, onLoadingChange }: Props) {
     try {
       const formData = new FormData()
       formData.append('audio', blob, 'recording.webm')
+      formData.append('language', language)
 
       const response = await axios.post<{ text: string; language: string }>(
         `${API_URL}/api/stt/transcribe`,
@@ -77,7 +77,7 @@ export function AudioInput({ onTranscription, onLoadingChange }: Props) {
       onClick={recording ? stopAudio : startAudio}
       disabled={loading}
       title={recording ? t.stopAudio : t.startAudio}
-      className={`p-3 rounded-xl transition-all flex-shrink-0 ${
+      className={`h-12 w-12 flex items-center justify-center rounded-xl transition-all flex-shrink-0 ${
         recording
           ? 'bg-red-600 hover:bg-red-700 animate-pulse'
           : loading

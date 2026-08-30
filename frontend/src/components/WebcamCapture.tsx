@@ -1,9 +1,9 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { Camera, Square } from 'lucide-react'
+import { API_URL } from '../config'
 import { useLanguage } from '../context/LanguageContext'
 import axios from 'axios'
 
-const API_URL = 'http://127.0.0.1:8000'
 const POLLING_INTERVAL = 10000 // ms entre cada análisis
 
 interface Detection {
@@ -223,7 +223,7 @@ export function WebcamCapture({ query, conversationMode, conversationHistory, tr
         onClick={active ? stopWebcam : startWebcam}
         className={`w-full py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ${
           active
-            ? 'bg-red-600 hover:bg-red-700'
+            ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500'
             : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
         }`}
       >
