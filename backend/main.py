@@ -24,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MAX_QUERY_LENGTH = 500
+MAX_QUERY_LENGTH = 1000
 
 def validate_query_length(query: str):
     if len(query) > MAX_QUERY_LENGTH:

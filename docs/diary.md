@@ -87,3 +87,18 @@
   requirements.txt, permisos de micrófono bloqueados en el navegador, scrollbar 
   nativo del textarea con aspecto feo resuelto con CSS
 - Próximos pasos: smolagents como orquestador, TTS
+
+## Sesión 11 — 26/08/2026
+- Tiempo: Xmin (rellena con Clockify)
+- Logros: TTS integrado con edge-tts y componente AudioOutput con voces en 
+  6 idiomas, botón de audio en respuestas e historial, renombrado a Asistente 
+  Mini con título de pestaña fijo, subtítulo actualizado, textarea 
+  auto-redimensionable con scrollbar oculto, área de subida más compacta,
+  archivo config.ts creado para centralizar API_URL, screenshot de fase 2 
+  añadido a docs/screenshots.
+- Problemas encontrados: Coqui TTS no compatible con Python 3.13, edge-tts 
+  como alternativa open-source compatible, currentTime de HTMLAudioElement 
+  no modificable directamente desde useState resuelto con useRef, modelo Whisper 
+  base con precisión insuficiente mejorado cambiando a small con vad_filter=True 
+  para filtrar silencios automáticamente
+- Próximos pasos: smolagents como orquestador de herramientas
