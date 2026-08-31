@@ -7,6 +7,7 @@ import { useLanguage } from './context/LanguageContext'
 import { WebcamCapture } from './components/WebcamCapture'
 import { AudioInput } from './components/AudioInput'
 import { AudioOutput } from './components/AudioOutput'
+import { syncGradient } from './utils/animations'
 import { Image as ImageIcon, Camera, Search, FolderOpen, Trash2 } from 'lucide-react'
 
 interface Detection {
@@ -36,7 +37,7 @@ function App() {
   const [error, setError] = useState('')
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
-  const [mode, setMode] = useState<'image' | 'webcam'>('image')
+  const [mode, setMode] = useState<'image' | 'webcam' | 'mini'>('image')
   const [conversationMode, setConversationMode] = useState(false)
   const [conversationHistory, setConversationHistory] = useState<string>('[]')
   const [audioLoading, setAudioLoading] = useState(false)
@@ -132,7 +133,10 @@ function App() {
       <div className="flex flex-col items-center px-4 py-8 w-full mt-4">
         {/* Header */}
         <div className="mb-4 text-center">
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+          <h1 
+            ref={syncGradient}
+            className="text-5xl font-extrabold bg-gradient-to-r from-blue-400 via-purple-500 to-blue-400 bg-clip-text text-transparent animate-gradient"
+          >
             {t.title}
           </h1>
           <p className="text-gray-400 mt-2 text-lg">
@@ -152,10 +156,11 @@ function App() {
             {/* Selector de modo */}
             <div className="flex rounded-xl overflow-hidden border border-gray-700">
               <button
+                ref={syncGradient}
                 onClick={() => handleModeChange('image')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold transition-all ${
+                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold transition-all bg-[length:200%_200%] animate-gradient ${
                   mode === 'image'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                    ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 text-white'
                     : 'bg-gray-800 text-gray-400 hover:text-white'
                 }`}
               >
@@ -164,10 +169,11 @@ function App() {
               </button>
 
               <button
+                ref={syncGradient}
                 onClick={() => handleModeChange('webcam')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold transition-all ${
+                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold transition-all bg-[length:200%_200%] animate-gradient ${
                   mode === 'webcam'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+                    ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 text-white'
                     : 'bg-gray-800 text-gray-400 hover:text-white'
                 }`}
               >
@@ -261,9 +267,10 @@ function App() {
                 </div>
 
                 <button
+                  ref={syncGradient}
                   onClick={handleSubmit}
                   disabled={!image || !query || loading}
-                  className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 bg-[length:200%_200%] animate-gradient hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:[animation-play-state:paused] transition-all"
                 >
                   {loading ? t.analyzing : t.analyze}
                 </button>
@@ -325,12 +332,15 @@ function App() {
                   {conversationMode && (
                     <span 
                       title={!isWebcamActive ? t.activateCameraTooltip : ""}
-                      className={!isWebcamActive ? "cursor-not-allowed" : ""}
+                      className={`transition-opacity ${
+                        conversationMode ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                      } ${!isWebcamActive ? "cursor-not-allowed" : ""}`}
                     >
                       <button
+                        ref={syncGradient}
                         onClick={() => setWebcamTrigger(prev => prev + 1)}
                         disabled={!query || loading || !isWebcamActive}
-                        className={`h-12 px-6 flex items-center justify-center rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-40 transition-all flex-shrink-0 ${
+                        className={`h-12 px-6 flex items-center justify-center rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 bg-[length:200%_200%] animate-gradient hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none transition-all flex-shrink-0 ${
                           (!query || loading || !isWebcamActive) ? 'pointer-events-none' : ''
                         }`}
                       >
@@ -345,7 +355,12 @@ function App() {
                   conversationMode={conversationMode}
                   conversationHistory={conversationHistory}
                   trigger={webcamTrigger}
-                  onActiveChange={setIsWebcamActive}
+                  onActiveChange={(isActive) => {
+                    setIsWebcamActive(isActive)
+                    if (!isActive) {
+                      setResult(null)
+                    }
+                  }}
                   onResult={(r) => {
                     setResult(r)
                     if (r.history) setConversationHistory(r.history)
@@ -380,7 +395,7 @@ function App() {
 
           {/* Historial fijo a la derecha sin afectar el centro */}
           <div className="w-80 flex-shrink-0 flex flex-col gap-2">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center pr-1">
               <h2 className="text-xl font-bold text-gray-300">{t.history}</h2>
               {history.length > 0 && (
                 <button
@@ -420,7 +435,7 @@ function App() {
                       <div className="flex flex-col gap-1 overflow-hidden">
                         <div className="text-purple-400 text-sm font-semibold truncate flex items-center gap-2">
                           <Search size={14} className="flex-shrink-0" />
-                          <span className="truncate">{entry.query}</span>
+                          <span className="truncate" title={entry.query}>{entry.query}</span>
                           <div className="ml-auto flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                             <AudioOutput text={entry.answer} />
                           </div>

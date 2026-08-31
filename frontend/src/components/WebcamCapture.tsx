@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback } from 'react'
 import { Camera, Square } from 'lucide-react'
 import { API_URL } from '../config'
 import { useLanguage } from '../context/LanguageContext'
+import { syncGradient } from '../utils/animations'
 import axios from 'axios'
 
 const POLLING_INTERVAL = 10000 // ms entre cada análisis
@@ -220,11 +221,12 @@ export function WebcamCapture({ query, conversationMode, conversationHistory, tr
 
       {/* Botón activar/desactivar */}
       <button
+        ref={syncGradient}
         onClick={active ? stopWebcam : startWebcam}
         className={`w-full py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ${
           active
-            ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500'
-            : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
+            ? 'bg-gradient-to-r from-red-600 via-pink-600 to-red-600 bg-[length:200%_200%] animate-gradient hover:opacity-90'
+            : 'bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 bg-[length:200%_200%] animate-gradient hover:opacity-90'
         }`}
       >
         {active ? (
