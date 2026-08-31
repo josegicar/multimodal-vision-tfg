@@ -102,3 +102,15 @@
   base con precisión insuficiente mejorado cambiando a small con vad_filter=True 
   para filtrar silencios automáticamente
 - Próximos pasos: smolagents como orquestador de herramientas
+
+## Sesión 12 — 31/08/2026
+- Tiempo: 2h 37min
+- Logros: Sincronización global de animaciones CSS (gradientes) en los botones de la interfaz
+  calculando el delay de forma dinámica mediante refs del DOM, primeros pasos de integración
+  con smolagents.
+- Problemas encontrados: Desincronización de animaciones CSS al montar/desmontar componentes
+  en React y al cambiar pestañas, fallo de validación BaseTool en smolagents al pasar funciones
+  puras en lugar de instanciar las herramientas, que fue solucionado aplicando el decorador @tool.
+- Próximos pasos: Desarrollar la interfaz visual limpia del "Modo Mini" tipo agente y conectar 
+  completamente las órdenes JSON del agente autónomo con la ejecución de hardware (cámara/archivos) 
+  en el frontend.
