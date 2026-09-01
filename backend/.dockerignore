@@ -1,0 +1,12 @@
+__pycache__/
+api_gateway/
+*.pyc
+*.pt
+.env
+.env.example
+.git/
+.gitignore
+.vscode/
+docs/
+tests/
+*.md

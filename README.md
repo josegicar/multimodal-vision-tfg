@@ -4,11 +4,16 @@ Proyecto de TFG centrado en la creación de un agente multimodal (Mini) con Fast
 ## Estado actual
 - ✅ Fase 0 — Asistente visual con imagen estática
 - ✅ Fase 1 — Webcam en tiempo real
+<<<<<<< HEAD
 - ✅ Fase 2 — Características multimodales completadas (Agente autónomo, STT, TTS, Modo Conversación)
+=======
+- 🔄 Fase 2 — Multimodal completo (en progreso)
+>>>>>>> 1c859ae6f52bc799d391c7bb44e2131310bbc195
 
 ## Stack
 - **Backend**: FastAPI + YOLOv8 + GPT-4o Vision + SmolAgents + Faster-Whisper (STT) + Edge-TTS
 - **Frontend**: React 19 + TypeScript + Tailwind CSS v4
+- **Infraestructura**: Docker + Docker Compose
 
 ## Requisitos previos
 - Python 3.13+
@@ -55,7 +60,7 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### 2. Instalar dependencias
+### 2. Instalar dependencias dentro del proyecto
 Instala las librerias necesarias.
 
 ```bash
@@ -71,7 +76,9 @@ Genera el archivo requirements.txt para facilitar la reproducibilidad del proyec
 pip freeze > requirements.txt
 ```
 
-### 4. Clonar el repositorio
+# Instalación
+
+### 1. Clonar el repositorio
 Clona el repositorio y edita las variables de entorno en .env
 
 ```bash
@@ -79,7 +86,7 @@ git clone https://github.com/josegicar/multimodal-vision-tfg.git
 cd multimodal-vision-tfg
 ```
 
-### 5. Modificaciones para cada área de trabajo
+### 2. Modificaciones para cada área de trabajo
 
 ```bash
 # Extrae el archivo .env.example como .env a la raíz de tu proyecto y edita las variables:
@@ -108,3 +115,16 @@ cd frontend
 npm install # Instalar módulos la primera vez
 npm run dev
 ```
+
+# Arranque con Docker
+```bash
+docker-compose up --build
+```
+
+## Acceso
+- Frontend: http://localhost:5173
+- Backend docs: http://127.0.0.1:8000/docs
+
+## Notas
+- El modelo `yolov8n.pt` se descarga automáticamente en el primer arranque
+- No se sube el archivo `.env` al repositorio

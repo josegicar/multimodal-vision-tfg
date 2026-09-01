@@ -30,6 +30,12 @@ export function OverlayCanvas({ imageUrl, detections }: Props) {
 
       ctx.drawImage(img, 0, 0)
 
+      const scale = img.width / 1000
+      const fontSize = Math.max(16, 22 * scale)
+      const lineWidth = Math.max(2, 3 * scale)
+      const labelPaddingH = 8 * scale
+      const labelHeight = fontSize + 10 * scale
+
       detections.forEach((det) => {
         const [x1, y1, x2, y2] = det.bbox
         const w = x2 - x1
@@ -37,16 +43,18 @@ export function OverlayCanvas({ imageUrl, detections }: Props) {
 
         // Caja
         ctx.strokeStyle = '#00ff00'
-        ctx.lineWidth = 3
+        ctx.lineWidth = lineWidth
         ctx.strokeRect(x1, y1, w, h)
 
         // Etiqueta
         const label = `${det.class} ${(det.confidence * 100).toFixed(0)}%`
+        ctx.font = `${fontSize}px Arial`
+        const textWidth = ctx.measureText(label).width
+
         ctx.fillStyle = '#00ff00'
-        ctx.fillRect(x1, y1 - 24, label.length * 8, 24)
+        ctx.fillRect(x1, y1 - labelHeight, textWidth + labelPaddingH * 2, labelHeight)
         ctx.fillStyle = '#000000'
-        ctx.font = '16px Arial'
-        ctx.fillText(label, x1 + 4, y1 - 6)
+        ctx.fillText(label, x1 + labelPaddingH, y1 - labelHeight * 0.25)
       })
     }
   }, [imageUrl, detections])
