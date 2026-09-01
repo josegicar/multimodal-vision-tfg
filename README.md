@@ -4,11 +4,7 @@ Proyecto de TFG centrado en la creación de un agente multimodal (Mini) con Fast
 ## Estado actual
 - ✅ Fase 0 — Asistente visual con imagen estática
 - ✅ Fase 1 — Webcam en tiempo real
-<<<<<<< HEAD
 - ✅ Fase 2 — Características multimodales completadas (Agente autónomo, STT, TTS, Modo Conversación)
-=======
-- 🔄 Fase 2 — Multimodal completo (en progreso)
->>>>>>> 1c859ae6f52bc799d391c7bb44e2131310bbc195
 
 ## Stack
 - **Backend**: FastAPI + YOLOv8 + GPT-4o Vision + SmolAgents + Faster-Whisper (STT) + Edge-TTS
