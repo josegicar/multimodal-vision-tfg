@@ -3,12 +3,8 @@ Proyecto de TFG centrado en la creación de un agente multimodal (Mini) con Fast
 
 ## Estado actual
 - ✅ Fase 0 — Asistente visual con imagen estática
-<<<<<<< Updated upstream
-- 🔄 Fase 1 — Webcam en tiempo real (en progreso)
-=======
 - ✅ Fase 1 — Webcam en tiempo real
 - ✅ Fase 2 — Características multimodales completadas (Agente autónomo, STT, TTS, Modo Conversación)
->>>>>>> Stashed changes
 
 ## Stack
 - **Backend**: FastAPI + YOLOv8 + GPT-4o Vision + SmolAgents + Faster-Whisper (STT) + Edge-TTS
@@ -17,10 +13,6 @@ Proyecto de TFG centrado en la creación de un agente multimodal (Mini) con Fast
 ## Requisitos previos
 - Python 3.13+
 - Node.js 18+
-<<<<<<< Updated upstream
-
-# Primeros pasos
-=======
 - Cuenta de OpenAI con créditos y API key
 - Permisos de cámara y micrófono habilitados en el navegador
 - Docker Desktop (opcional)
@@ -48,7 +40,6 @@ Proyecto de TFG centrado en la creación de un agente multimodal (Mini) con Fast
 - `POST /api/mini` — Endpoint principal de orquestación del agente multimodal (SmolAgents)
 
 # Primeros pasos (siempre empezar desde la raíz del proyecto)
->>>>>>> Stashed changes
 
 ### 1. Preparar el Entorno Virtual
 Es recomendable usar un entorno virtual para mantener las dependencias aisladas.
