@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { Camera, Square } from 'lucide-react'
 import { API_URL } from '../config'
 import { useLanguage } from '../context/LanguageContext'
@@ -20,7 +20,9 @@ interface WebcamResult {
 }
 
 interface Props {
+  isActive: boolean
   query: string
+  pollingEnabled: boolean
   conversationMode: boolean
   conversationHistory: string
   trigger: number
@@ -28,7 +30,15 @@ interface Props {
   onActiveChange?: (isActive: boolean) => void
 }
 
-export function WebcamCapture({ query, conversationMode, conversationHistory, trigger, onResult, onActiveChange }: Props) {
+export interface WebcamCaptureHandle {
+  captureCurrentFrame: () => string | null
+  stop: () => void
+}
+
+export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function WebcamCapture(
+  { isActive, query, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange },
+  ref
+) {
   const { language, t } = useLanguage()
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -42,11 +52,28 @@ export function WebcamCapture({ query, conversationMode, conversationHistory, tr
   const [error, setError] = useState('')
   const [detections, setDetections] = useState<Detection[]>([])
 
-  const requestRefs = useRef({ query, language, conversationMode, conversationHistory, trigger, onResult, onActiveChange})
+  const requestRefs = useRef({ isActive, query, language, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange})
+
+  useImperativeHandle(ref, () => ({
+    captureCurrentFrame: () => {
+      const video = videoRef.current
+      const canvas = canvasRef.current
+      if (!video || !canvas || video.readyState < 2) return null
+
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return null
+
+      ctx.drawImage(video, 0, 0)
+      return canvas.toDataURL('image/jpeg', 0.7)
+    },
+    stop: () => stopWebcam()
+  }))
 
   useEffect(() => {
-    requestRefs.current = { query, language, conversationMode, conversationHistory, trigger, onResult, onActiveChange }
-  }, [query, language, conversationMode, conversationHistory, trigger, onResult, onActiveChange])
+    requestRefs.current = { isActive, query, language, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange }
+  }, [isActive, query, language, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange])
 
   // Dibuja bounding boxes sobre el overlay
   const drawOverlay = useCallback((dets: Detection[]) => {
@@ -140,7 +167,7 @@ export function WebcamCapture({ query, conversationMode, conversationHistory, tr
   }, [loading, drawOverlay, t.analyzeError])
 
   // Activa la webcam
-  const startWebcam = async () => {
+  const startWebcam = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480 , facingMode: "user" }
@@ -151,10 +178,10 @@ export function WebcamCapture({ query, conversationMode, conversationHistory, tr
     } catch {
       setError(t.webcamError)
     }
-  }
+  }, [t.webcamError])
 
   // Desactiva la webcam
-  const stopWebcam = () => {
+  const stopWebcam = useCallback(() => {
     streamRef.current?.getTracks().forEach(t => t.stop())
     streamRef.current = null
     if (intervalRef.current) clearInterval(intervalRef.current)
@@ -165,7 +192,16 @@ export function WebcamCapture({ query, conversationMode, conversationHistory, tr
       const ctx = overlayRef.current.getContext('2d')
       ctx?.clearRect(0, 0, overlayRef.current.width, overlayRef.current.height)
     }
-  }
+  }, [])
+
+  // Inicia o detiene la cámara para modo Mini
+  useEffect(() => {
+    if (isActive) {
+      startWebcam(); 
+    } else {
+      stopWebcam();
+    }
+  }, [isActive, startWebcam, stopWebcam]);
 
   // Engancha el stream al vídeo
   useEffect(() => {
@@ -185,7 +221,7 @@ export function WebcamCapture({ query, conversationMode, conversationHistory, tr
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>
     
-    if (active && query && videoReady && !conversationMode) {
+    if (active && query && videoReady && !conversationMode && pollingEnabled) {
       timeoutId = setTimeout(() => {
         analyzeFrame()
         intervalRef.current = setInterval(analyzeFrame, POLLING_INTERVAL)
@@ -196,7 +232,7 @@ export function WebcamCapture({ query, conversationMode, conversationHistory, tr
       if (timeoutId) clearTimeout(timeoutId)
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [active, query, videoReady, conversationMode, analyzeFrame])
+  }, [active, query, videoReady, conversationMode, pollingEnabled, analyzeFrame])
 
   // Modo conversación
   useEffect(() => {
@@ -214,7 +250,7 @@ export function WebcamCapture({ query, conversationMode, conversationHistory, tr
   // Limpia al desmontar
   useEffect(() => {
     return () => stopWebcam()
-  }, [])
+  }, [stopWebcam])
 
   return (
     <div className="flex flex-col gap-4">
@@ -288,4 +324,4 @@ export function WebcamCapture({ query, conversationMode, conversationHistory, tr
       )}
     </div>
   )
-}
+})
