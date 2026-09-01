@@ -50,6 +50,8 @@ function App() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const webcamRef = useRef<WebcamCaptureHandle>(null)
+  const miniContainerRef = useRef<HTMLDivElement>(null)
+  const miniLogoRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     document.title = 'Mini'
@@ -73,6 +75,41 @@ function App() {
       document.body.style.overflow = 'unset'
     }
   }, [isManualOpen])
+
+  useEffect(() => {
+    if (mode !== 'mini') return
+
+    const container = miniContainerRef.current
+    const logo = miniLogoRef.current
+    if (!container || !logo) return
+
+    let x = Math.random() * (container.clientWidth - 140)
+    let y = Math.random() * (container.clientHeight - 140)
+    
+    let dx = 1.5 
+    let dy = 1.5 
+    let animationFrameId: number
+
+    const animate = () => {
+      if (!container || !logo) return
+      
+      const bounds = container.getBoundingClientRect()
+      const logoSize = 140 
+
+      if (x + logoSize >= bounds.width || x <= 0) dx = -dx
+      if (y + logoSize >= bounds.height || y <= 0) dy = -dy
+
+      x += dx
+      y += dy
+
+      logo.style.transform = `translate(${x}px, ${y}px)`
+      animationFrameId = requestAnimationFrame(animate)
+    }
+
+    animationFrameId = requestAnimationFrame(animate)
+
+    return () => cancelAnimationFrame(animationFrameId)
+  }, [mode])
 
   const handleModeChange = (newMode: 'image' | 'webcam' | 'mini') => {
     setMode(newMode)
@@ -299,12 +336,17 @@ function App() {
                   <div className="absolute w-48 h-48 rounded-full border border-blue-500/20 animate-ping" style={{ animationDuration: '3s', animationDelay: '0.5s' }} />
                 </div>
 
-                {/* Capa 3: icono flotando - sube la opacidad para verlo mejor */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none top-[80px]">
-                  <div className="animate-bounce" style={{ animationDuration: '3s' }}>
-                    <div className="w-[140px] h-[140px] rounded-full overflow-hidden aspect-square">
-                      <img src="/chatbot.svg" alt="" className="w-full h-full object-cover" />
-                    </div>
+                {/* Capa 3: icono flotando (Efecto DVD) */}
+                <div 
+                  ref={miniContainerRef} 
+                  className="absolute inset-0 overflow-hidden pointer-events-none rounded-xl"
+                >
+                  <div 
+                    ref={miniLogoRef}
+                    className="absolute opacity-10 w-[140px] h-[140px] rounded-full overflow-hidden"
+                    style={{ top: 0, left: 0 }}
+                  >
+                    <img src="/chatbot.svg" alt="" className="w-full h-full object-cover" />
                   </div>
                 </div>
 
