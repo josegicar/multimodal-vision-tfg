@@ -177,45 +177,51 @@ export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function Web
       setError('')
     } catch {
       setError(t.webcamError)
+      if (onActiveChange) onActiveChange(false)
     }
-  }, [t.webcamError])
+  }, [t.webcamError, onActiveChange])
 
   // Desactiva la webcam
   const stopWebcam = useCallback(() => {
-    streamRef.current?.getTracks().forEach(t => t.stop())
-    streamRef.current = null
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop())
+      streamRef.current = null
+    }
+    
+    if (videoRef.current) {
+      if (videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream
+        stream.getTracks().forEach(t => t.stop())
+      }
+      videoRef.current.srcObject = null
+    }
+
     if (intervalRef.current) clearInterval(intervalRef.current)
     intervalRef.current = null
     setActive(false)
     setDetections([])
+    
     if (overlayRef.current) {
       const ctx = overlayRef.current.getContext('2d')
       ctx?.clearRect(0, 0, overlayRef.current.width, overlayRef.current.height)
     }
   }, [])
 
-  // Inicia o detiene la cámara para modo Mini
   useEffect(() => {
     if (isActive) {
-      startWebcam(); 
+      startWebcam()
     } else {
-      stopWebcam();
+      stopWebcam()
     }
-  }, [isActive, startWebcam, stopWebcam]);
 
-  // Engancha el stream al vídeo
+    return () => stopWebcam()
+  }, [isActive, startWebcam, stopWebcam])
+
   useEffect(() => {
     if (active && videoRef.current && streamRef.current) {
       videoRef.current.srcObject = streamRef.current
     }
   }, [active])
-
-  // Avisa a App.tsx cuando 'active' cambie
-  useEffect(() => {
-    if (onActiveChange) {
-      onActiveChange(active)
-    }
-  }, [active, onActiveChange])
 
   // Arranca el polling cuando hay webcam activa y query escrita
   useEffect(() => {

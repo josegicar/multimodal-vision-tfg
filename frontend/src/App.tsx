@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import { API_URL, AGENT_URL } from './config'
 import { Navbar } from './components/Navbar'
@@ -128,6 +128,15 @@ function App() {
       }
     }
   }
+
+  const handleWebcamActiveChange = useCallback((isActive: boolean) => {
+    setIsWebcamActive(isActive)
+    if (isActive) {
+      setImage(null)
+      setPreview('')
+    }
+    if (!isActive) setResult(null)
+  }, [])
 
   const handleSubmit = async () => {
     if (mode !== 'mini' && (!image || !query)) return
@@ -444,7 +453,7 @@ function App() {
                   />
                 )}
                 {result && (
-                  <OverlayCanvas imageUrl={preview} detections={result.detections} />
+                  <OverlayCanvas imageUrl={preview} detections={result.detections || []} />
                 )}
 
                 <div className="flex gap-2 items-end">
@@ -452,7 +461,12 @@ function App() {
                     ref={textareaRef}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSubmit()
+                      }
+                    }}
                     placeholder={audioLoading ? t.transcribing : t.placeholder}
                     rows={1}
                     maxLength={1000}
@@ -465,6 +479,7 @@ function App() {
                 </div>
 
                 <button
+                  type="button"
                   ref={syncGradient}
                   onClick={handleSubmit}
                   disabled={!image || !query || loading}
@@ -486,7 +501,7 @@ function App() {
                     </div>
                     <div>
                       <h3 className="text-blue-400 font-semibold mb-2">{t.detections}</h3>
-                      {result.detections.length > 0 ? (
+                      {result.detections?.length > 0 ? (
                         <ul className="flex flex-col gap-1">
                           {result.detections.map((det, i) => (
                             <li key={i} className="flex justify-between text-sm text-gray-300">
@@ -512,8 +527,11 @@ function App() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && query && conversationMode && isWebcamActive) {
-                        setWebcamTrigger(prev => prev + 1)
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        if (query && conversationMode && isWebcamActive) {
+                          setWebcamTrigger(prev => prev + 1)
+                        }
                       }
                     }}
                     placeholder={audioLoading ? t.transcribing : t.placeholder}
@@ -571,14 +589,7 @@ function App() {
                 conversationMode={conversationMode}
                 conversationHistory={conversationHistory}
                 trigger={webcamTrigger}
-                onActiveChange={(isActive) => {
-                  setIsWebcamActive(isActive)
-                  if (isActive) {
-                    setImage(null)
-                    setPreview('')
-                  }
-                  if (!isActive) setResult(null)
-                }}
+                onActiveChange={handleWebcamActiveChange}
                 onResult={(r) => {
                   setResult(r)
                   if (r.history) setConversationHistory(r.history)
