@@ -91,16 +91,16 @@ export function AudioOutput({ text }: Props) {
     <button
       onClick={speak}
       title={playing ? t.pauseAudio : t.playAudio}
-      className={`p-2 rounded-lg transition-all ${
+      className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${
         playing
-          ? 'bg-purple-600 hover:bg-purple-700'
-          : 'bg-gray-700 hover:bg-gray-600'
+          ? 'bg-purple-600 hover:bg-purple-700 text-white border border-gray-700'
+          : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-700'
       }`}
     >
       {playing ? (
-        <VolumeX size={16} className="text-white" />
+        <VolumeX size={16} />
       ) : (
-        <Volume2 size={16} className="text-white" />
+        <Volume2 size={16} />
       )}
     </button>
   )

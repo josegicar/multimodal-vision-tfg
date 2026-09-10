@@ -43,6 +43,7 @@ function App() {
   const [audioLoading, setAudioLoading] = useState(false)
   const [webcamTrigger, setWebcamTrigger] = useState(0)
   const [isWebcamActive, setIsWebcamActive] = useState(false)
+  const [isRecordingMini, setIsRecordingMini] = useState(false)
   const [isManualOpen, setIsManualOpen] = useState(false)
 
   const { language, t } = useLanguage()
@@ -86,8 +87,8 @@ function App() {
     let x = Math.random() * (container.clientWidth - 140)
     let y = Math.random() * (container.clientHeight - 140)
     
-    let dx = 1.5 
-    let dy = 1.5 
+    let dx = 0.5 
+    let dy = 0.5 
     let animationFrameId: number
 
     const animate = () => {
@@ -230,7 +231,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center px-4 py-8">
+    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col items-center px-4 py-8 transition-colors duration-500">
 
       <Navbar />
 
@@ -243,11 +244,11 @@ function App() {
           >
             {t.title}
           </h1>
-          <p className="text-gray-400 mt-2 text-lg">
+          <p className="text-gray-700 dark:text-gray-300 mt-2 text-lg transition-colors">
             {t.subtitle}
             <button 
                 onClick={() => setIsManualOpen(true)}
-                className="p-1 text-gray-500 hover:text-purple-400 transition-colors rounded-full hover:bg-gray-800"
+                className="p-1 text-gray-500 dark:text-gray-400 hover:text-purple-400 transition-colors rounded-full hover:bg-white dark:hover:bg-gray-800"
                 title="Info"
               >
                 <Info size={18} />
@@ -262,17 +263,17 @@ function App() {
           <div className="w-80 flex-shrink-0 invisible hidden lg:block" />
 
           {/* Card principal centrada */}
-          <div className="w-full max-w-2xl bg-gray-900 rounded-2xl shadow-xl p-6 flex flex-col gap-4 z-10">
+          <div className="w-full max-w-2xl bg-white dark:bg-gray-900 border border-gray-700 dark:border-gray-800 rounded-2xl shadow-xl p-6 flex flex-col gap-4 z-10 transition-colors duration-500">
 
             {/* Selector de modo */}
-            <div className="flex rounded-xl overflow-hidden border border-gray-700">
+            <div className="flex rounded-xl overflow-hidden border border-gray-700 bg-gray-100 dark:bg-gray-800/50 transition-colors">
               <button
                 ref={syncGradient}
                 onClick={() => handleModeChange('image')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold transition-all bg-[length:200%_200%] animate-gradient ${
                   mode === 'image'
-                    ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 text-white'
-                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                    ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 text-white shadow-md'
+                    : 'bg-transparent text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors'
                 }`}
               >
                 <ImageIcon size={18} />
@@ -284,8 +285,8 @@ function App() {
                 onClick={() => handleModeChange('webcam')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold transition-all bg-[length:200%_200%] animate-gradient ${
                   mode === 'webcam'
-                    ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 text-white'
-                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                    ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 text-white shadow-md'
+                    : 'bg-transparent text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors'
                 }`}
               >
                 <Camera size={18} />
@@ -297,8 +298,8 @@ function App() {
                 onClick={() => handleModeChange('mini')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold transition-all bg-[length:200%_200%] animate-gradient ${
                   mode === 'mini'
-                    ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 text-white'
-                    : 'bg-gray-800 text-gray-400 hover:text-white'
+                    ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 text-white shadow-md'
+                    : 'bg-transparent text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors'
                 }`}
               >
                 <img src="/chatbot.svg" alt="Mini" className="w-[18px] h-[18px] rounded-full" />
@@ -308,17 +309,17 @@ function App() {
             </div>
 
             {/* Toggle modo conversación */}
-            <div className="flex items-center justify-between bg-gray-800 rounded-xl px-4 py-3">
+            <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 transition-colors">
               <div className="flex flex-col">
-                <span className="text-white text-sm font-semibold">{t.conversationMode}</span>
-                <span className="text-gray-400 text-xs">{t.conversationModeDesc}</span>
+                <span className="text-gray-900 dark:text-white text-sm font-semibold transition-colors">{t.conversationMode}</span>
+                <span className="text-gray-500 dark:text-gray-400 text-xs transition-colors">{t.conversationModeDesc}</span>
               </div>
               <button
                 onClick={() => {
                   setConversationMode(!conversationMode)
-                  setConversationHistory('[]') // resetea al cambiar modo
+                  setConversationHistory('[]')
                 }}
-                className={`mb-1 w-12 h-6 rounded-full transition-all ${
+                className={`mb-1 w-12 h-6 rounded-full border border-gray-700 transition-all ${
                   conversationMode ? 'bg-purple-500' : 'bg-gray-600'
                 }`}
               >
@@ -329,7 +330,7 @@ function App() {
             </div>
 
             {mode === 'mini' ? (
-              <div className="relative w-full min-h-[380px] bg-gray-950 border border-gray-700 rounded-xl overflow-hidden flex flex-col items-center justify-center p-8">
+              <div className="relative w-full min-h-[380px] bg-white dark:bg-gray-950 border border-gray-700 rounded-xl overflow-hidden flex flex-col items-center justify-center p-8 transition-colors">
 
                 {/* Capa 1: gradiente radial */}
                 <div
@@ -352,7 +353,7 @@ function App() {
                 >
                   <div 
                     ref={miniLogoRef}
-                    className="absolute opacity-10 w-[140px] h-[140px] rounded-full overflow-hidden"
+                    className="absolute dark:opacity-10 w-[140px] h-[140px] rounded-full overflow-hidden"
                     style={{ top: 0, left: 0 }}
                   >
                     <img src="/chatbot.svg" alt="" className="w-full h-full object-cover" />
@@ -361,7 +362,7 @@ function App() {
 
                 {/* Cuadro de texto central */}
                 <div className="relative z-10 w-full max-w-lg mb-6 flex flex-col items-center gap-4">
-                  <h3 className="text-xl font-medium text-gray-300 text-center">
+                  <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 text-center transition-colors">
                     {t.miniGreeting}
                   </h3>
 
@@ -378,7 +379,7 @@ function App() {
                     placeholder={audioLoading ? t.transcribing : t.miniPlaceholder}
                     rows={2}
                     maxLength={1000}
-                    className="w-full bg-gray-800/80 backdrop-blur-sm border border-purple-500/30 rounded-2xl px-6 py-4 text-white text-center text-lg placeholder-gray-500 focus:outline-none focus:border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.15)] transition-all resize-none overflow-y-auto max-h-32"
+                    className="w-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-purple-200 dark:border-purple-500/30 rounded-2xl px-6 py-4 text-gray-900 dark:text-gray-100 text-center text-lg placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-purple-500 shadow-[0_0_100px_rgba(168,85,247,0.15)] transition-all resize-none overflow-y-auto max-h-32"
                   />
 
                   {error && <p className="text-red-400 text-center text-sm">{error}</p>}
@@ -389,14 +390,18 @@ function App() {
                   <AudioInput
                     onTranscription={(text) => setQuery(prev => prev ? `${prev} ${text}` : text)}
                     onLoadingChange={(loading) => setAudioLoading(loading)}
+                    onRecordingChange={(recording) => setIsRecordingMini(recording)}
+                    showHint={false}
                   />
                 </div>
 
                 <p className="relative z-10 mt-4 text-sm h-5 leading-5 text-center">
-                  {loading ? (
+                  {isRecordingMini ? (
+                    <span className="text-red-400 animate-pulse">{t.tapToStopRecording}</span>
+                  ) : loading ? (
                     <span className="text-purple-400 animate-pulse">{t.analyzing}</span>
                   ) : (
-                    <span className="text-gray-500">{t.tapToSpeak}</span>
+                    <span className="text-gray-500 dark:text-gray-400 transition-colors">{t.tapToSpeak}</span>
                   )}
                 </p>
 
@@ -413,7 +418,7 @@ function App() {
               <>
                 {/* Upload */}
                 <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 cursor-pointer hover:border-purple-500 transition-colors">
-                  <div className="mb-2 text-gray-400">
+                  <div className="mb-2 text-gray-500 dark:text-gray-400 transition-colors">
                     <FolderOpen size={32} strokeWidth={1.5} />
                   </div>
                   {image ? (
@@ -427,13 +432,13 @@ function App() {
                           setResult(null)
                         }}
                         title={t.clearImage}
-                        className="p-2 bg-gray-800 hover:bg-red-600 rounded-lg text-gray-400 hover:text-white transition-colors"
+                        className="p-2 bg-white dark:bg-gray-800 hover:bg-red-600 dark:hover:bg-red-600 rounded-lg text-gray-500 dark:text-gray-400 border border-gray-700 hover:text-white transition-colors"
                       >
                         <Trash2 size={16} />
                       </button>
                     </div>
                   ) : (
-                    <span className="text-gray-400">{t.upload}</span>
+                    <span className="text-gray-500 dark:text-gray-400 transition-colors">{t.upload}</span>
                   )}
 
                   <input
@@ -470,7 +475,7 @@ function App() {
                     placeholder={audioLoading ? t.transcribing : t.placeholder}
                     rows={1}
                     maxLength={1000}
-                    className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors resize-none overflow-hidden-y-auto max-h-32"
+                    className="flex-1 bg-white dark:bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors resize-none overflow-hidden-y-auto max-h-32"
                   />
                   <AudioInput 
                     onTranscription={(text) => setQuery(prev => prev ? `${prev} ${text}` : text)}
@@ -483,7 +488,7 @@ function App() {
                   ref={syncGradient}
                   onClick={handleSubmit}
                   disabled={!image || !query || loading}
-                  className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 bg-[length:200%_200%] animate-gradient hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:[animation-play-state:paused] transition-all"
+                  className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 bg-[length:200%_200%] animate-gradient hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed disabled:[animation-play-state:paused] border border-gray-700 dark:border-gray-800 disabled:border-transparent transition-all"
                 >
                   {loading ? t.analyzing : t.analyze}
                 </button>
@@ -491,20 +496,20 @@ function App() {
                 {error && <p className="text-red-400 text-center">{error}</p>}
 
                 {result && (
-                  <div className="bg-gray-800 rounded-xl p-6 flex flex-col gap-4">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-700 rounded-xl p-6 flex flex-col gap-4 transition-colors">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-purple-400 font-semibold">{t.response}</h3>
                         <AudioOutput text={result.answer} />
                       </div>
-                      <p className="text-gray-200">{result.answer}</p>
+                      <p className="text-gray-800 dark:text-gray-300 transition-colors">{result.answer}</p>
                     </div>
                     <div>
-                      <h3 className="text-blue-400 font-semibold mb-2">{t.detections}</h3>
+                      <h3 className="text-blue-600 dark:text-blue-400 font-semibold mb-2 transition-colors2">{t.detections}</h3>
                       {result.detections?.length > 0 ? (
                         <ul className="flex flex-col gap-1">
                           {result.detections.map((det, i) => (
-                            <li key={i} className="flex justify-between text-sm text-gray-300">
+                            <li key={i} className="flex justify-between text-sm text-gray-700 dark:text-gray-300 transition-colors">
                               <span>{det.class}</span>
                               <span className={det.confidence > 0.7 ? 'text-green-400' : 'text-yellow-400'}>
                                 {(det.confidence * 100).toFixed(0)}%
@@ -513,7 +518,7 @@ function App() {
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-gray-500 text-sm">{t.noDetections}</p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 transition-colors">{t.noDetections}</p>
                       )}
                     </div>
                   </div>
@@ -537,7 +542,7 @@ function App() {
                     placeholder={audioLoading ? t.transcribing : t.placeholder}
                     rows={1}
                     maxLength={1000}
-                    className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors resize-none overflow-y-auto max-h-32"
+                    className="flex-1 bg-white dark:bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors resize-none overflow-y-auto max-h-32"
                   />
                   <AudioInput 
                     onTranscription={(text) => setQuery(prev => prev ? `${prev} ${text}` : text)}
@@ -556,7 +561,7 @@ function App() {
                         ref={syncGradient}
                         onClick={() => setWebcamTrigger(prev => prev + 1)}
                         disabled={!query || loading || !isWebcamActive}
-                        className={`h-12 px-6 flex items-center justify-center rounded-xl font-semibold text-white bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 bg-[length:200%_200%] animate-gradient hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none transition-all flex-shrink-0 ${
+                        className={`h-12 px-6 flex items-center justify-center rounded-xl font-semibold text-white border border-gray-700 dark:border-gray-800 bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 bg-[length:200%_200%] animate-gradient hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none transition-all flex-shrink-0 ${
                           (!query || loading || !isWebcamActive) ? 'pointer-events-none' : ''
                         }`}
                       >
@@ -573,7 +578,7 @@ function App() {
                         <h3 className="text-purple-400 font-semibold">{t.response}</h3>
                         <AudioOutput text={result.answer} />
                       </div>
-                      <p className="text-gray-200">{result.answer}</p>
+                      <p className="text-gray-800 dark:text-gray-200 transition-colors">{result.answer}</p>
                     </div>
                   </div>
                 )}
@@ -613,7 +618,7 @@ function App() {
           {/* Historial fijo a la derecha sin afectar el centro */}
           <div className="w-80 flex-shrink-0 flex flex-col gap-2">
             <div className="flex justify-between items-center pr-1">
-              <h2 className="text-xl font-bold text-gray-300">{t.history}</h2>
+              <h2 className="text-xl font-bold text-gray-700 dark:text-gray-300 transition-colors">{t.history}</h2>
               {history.length > 0 && (
                 <button
                   onClick={() => {
@@ -628,13 +633,13 @@ function App() {
             </div>
 
             {history.length === 0 ? (
-              <p className="text-gray-600 text-sm">{t.historyEmpty}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm transition-colors">{t.historyEmpty}</p>
             ) : (
               <div className="flex flex-col gap-3 max-h-[80vh] overflow-y-auto pr-1">
                 {history.map((entry, i) => (
                   <div
                     key={i}
-                    className="bg-gray-900 rounded-xl p-4 flex flex-col gap-3 cursor-pointer hover:bg-gray-800 transition-colors"
+                    className="bg-white dark:bg-gray-900 border border-gray-700 dark:border-gray-800 shadow-sm dark:shadow-none rounded-xl p-4 flex flex-col gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     onClick={() => setExpandedIndex(expandedIndex === i ? null : i)}
                   >
                     <div className="flex gap-3">
@@ -649,19 +654,19 @@ function App() {
                           <img src="/chatbot.svg" alt="Mini" className="w-8 h-8 rounded-full object-cover" />
                         </div>
                       )}
-                      <div className="flex flex-col gap-1 overflow-hidden">
+                      <div className="flex-1 flex-col gap-2 overflow-hidden">
                         <div className="text-purple-400 text-sm font-semibold truncate flex items-center gap-2">
-                          <Search size={14} className="flex-shrink-0" />
-                          <span className="truncate" title={entry.query}>{entry.query}</span>
-                          <div className="ml-auto flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <Search size={14} className="flex-shrink-0 mb-1.5" />
+                          <span className="truncate mb-1.5" title={entry.query}>{entry.query}</span>
+                          <div className="ml-auto flex-shrink-0 mb-1.5" onClick={(e) => e.stopPropagation()}>
                             <AudioOutput text={entry.answer} />
                           </div>
                         </div>
-                        <div className={`text-gray-300 text-xs ${expandedIndex === i ? '' : 'line-clamp-3'}`}>
+                        <div className={`text-gray-800 dark:text-gray-200 transition-colors text-xs ${expandedIndex === i ? '' : 'line-clamp-3'}`}>
                           {entry.answer}
                         </div>
                         {entry.preview && (
-                          <div className="text-gray-500 text-xs mt-1">
+                          <div className="text-gray-700 dark:text-gray-300 transition-colors text-xs mt-1">
                             {entry.detections.length > 0
                               ? t.detectedObjects(entry.detections.length)
                               : t.noDetections}
@@ -673,7 +678,7 @@ function App() {
                     {expandedIndex === i && entry.detections.length > 0 && (
                       <ul className="flex flex-col gap-1 border-t border-gray-700 pt-3">
                         {entry.detections.map((det, j) => (
-                          <li key={j} className="flex justify-between text-xs text-gray-300">
+                          <li key={j} className="flex justify-between text-xs text-gray-700 dark:text-gray-300 transition-colors">
                             <span>{det.class}</span>
                             <span className={det.confidence > 0.7 ? 'text-green-400' : 'text-yellow-400'}>
                               {(det.confidence * 100).toFixed(0)}%
@@ -683,7 +688,7 @@ function App() {
                       </ul>
                     )}
 
-                    <p className="text-gray-600 text-xs text-right">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs text-right transition-colors">
                       {expandedIndex === i ? t.collapse : t.expand}
                     </p>
                   </div>
@@ -694,7 +699,7 @@ function App() {
             {/* Modal del Manual de Usuario */}
             {isManualOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-                <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl">
+                <div className="bg-white dark:bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl transition-colors">
                   {/* Cabecera del Modal */}
                   <div className="flex justify-between items-center p-6 border-b border-gray-800">
                     <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
@@ -702,24 +707,24 @@ function App() {
                     </h2>
                     <button 
                       onClick={() => setIsManualOpen(false)}
-                      className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-800 rounded-lg"
+                      className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-lg"
                     >
                       <X size={24} />
                     </button>
                   </div>
 
                   {/* Contenido scrolleable */}
-                  <div className="p-6 overflow-y-auto flex flex-col gap-6 text-gray-300">
+                  <div className="p-6 overflow-y-auto flex flex-col gap-6 text-gray-700 dark:text-gray-300 transition-colors">
                     
                     <section>
-                      <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2 transition-colors">
                         <img src="/chatbot.svg" alt="Mini" className="w-5 h-5 rounded-full" />
                         {t.guideMiniTitle}
                       </h3>
                       <p className="text-sm leading-relaxed mb-3">
                         {t.guideMiniIntro1}<strong>{t.guideMiniIntroBold}</strong>{t.guideMiniIntro2}
                       </p>
-                      <ul className="list-disc pl-5 text-sm space-y-2 text-gray-400">
+                      <ul className="list-disc pl-5 text-sm space-y-2 text-gray-500 dark:text-gray-400 transition-colors">
                         <li><strong>{t.guideMiniVisualBold}</strong>{t.guideMiniVisualText}</li>
                         <li><strong>{t.guideMiniVoiceBold}</strong>{t.guideMiniVoiceText}</li>
                         <li><strong>{t.guideMiniConvBold}</strong>{t.guideMiniConvText}</li>
@@ -729,7 +734,7 @@ function App() {
                     <div className="w-full h-px bg-gray-800" />
 
                     <section>
-                      <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2 transition-colors">
                         <ImageIcon size={18} className="text-blue-400" />
                         <Camera size={18} className="text-purple-400" />
                         {t.guideClassicTitle}
@@ -737,7 +742,7 @@ function App() {
                       <p className="text-sm leading-relaxed mb-3">
                         {t.guideClassicIntro}
                       </p>
-                      <ul className="list-disc pl-5 text-sm space-y-2 text-gray-400">
+                      <ul className="list-disc pl-5 text-sm space-y-2 text-gray-500 dark:text-gray-400 transition-colors">
                         <li><strong>{t.guideClassicImageBold}</strong>{t.guideClassicImageText}</li>
                         <li><strong>{t.guideClassicWebcamBold}</strong>{t.guideClassicWebcamText}</li>
                       </ul>
@@ -746,13 +751,13 @@ function App() {
                     <div className="w-full h-px bg-gray-800" />
 
                     <section>
-                      <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2 transition-colors">
                         <Keyboard size={18} className="text-black-300" />
                         {t.guideShortcutsTitle}
                       </h3>
-                      <ul className="text-sm space-y-2 text-gray-400">
-                        <li><kbd className="bg-gray-800 px-2 py-1 rounded text-gray-300 border border-gray-700">Enter</kbd> : {t.guideShortcutEnter}</li>
-                        <li><kbd className="bg-gray-800 px-2 py-1 rounded text-gray-300 border border-gray-700">Shift</kbd> + <kbd className="bg-gray-800 px-2 py-1 rounded text-gray-300 border border-gray-700">Enter</kbd> : {t.guideShortcutShiftEnter}</li>
+                      <ul className="text-sm space-y-2">
+                        <li><kbd className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-400 transition-colors border border-gray-700">Enter</kbd> : {t.guideShortcutEnter}</li>
+                        <li><kbd className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-400 transition-colors border border-gray-700">Shift</kbd> + <kbd className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-300 transition-colors border border-gray-700">Enter</kbd> : {t.guideShortcutShiftEnter}</li>
                       </ul>
                     </section>
 

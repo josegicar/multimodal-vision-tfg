@@ -264,8 +264,8 @@ export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function Web
       {/* Botón activar/desactivar */}
       <button
         ref={syncGradient}
-        onClick={active ? stopWebcam : startWebcam}
-        className={`w-full py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ${
+        onClick={() => onActiveChange?.(!active)}
+        className={`w-full py-3 rounded-xl font-semibold text-white border border-gray-700 dark:border-gray-800 transition-all flex items-center justify-center gap-2 ${
           active
             ? 'bg-gradient-to-r from-red-600 via-pink-600 to-red-600 bg-[length:200%_200%] animate-gradient hover:opacity-90'
             : 'bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 bg-[length:200%_200%] animate-gradient hover:opacity-90'
