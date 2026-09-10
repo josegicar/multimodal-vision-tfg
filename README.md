@@ -26,6 +26,7 @@ Proyecto de TFG centrado en la creación de un agente multimodal (Mini) con Fast
 - ✅ Memoria Conversacional: Mantenimiento del contexto entre interacciones pasadas y presentes.
 - ✅ Modos de Interacción: Modo Imagen, Modo Webcam y Modo Mini (interfaz unificada tipo agente).
 - ✅ Internacionalización: Soporte completo para 6 idiomas (ES, EN, FR, DE, IT, PT) guardado en localStorage.
+- ✅ Intefaz Adaptativa: Sistema de temas Claro/Oscuro integrado nativamente con Tailwind CSS.
 - ✅ Manual de Usuario Interactivo: Guía modal integrada explicativa de atajos y modos de uso.
 - ✅ Análisis de colores dominantes con HSV
 - ✅ Historial de consultas con miniaturas
