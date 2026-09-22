@@ -74,7 +74,6 @@ function App() {
     }
   }, [isManualOpen])
 
-<<<<<<< HEAD
   useEffect(() => {
     if (mode !== 'mini') return
 
@@ -128,8 +127,6 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-=======
->>>>>>> a1f0832aab51cd71d34c61ccb545ba39019251c4
   const handleModeChange = (newMode: 'image' | 'webcam' | 'mini') => {
     setMode(newMode)
     setResult(null)
@@ -209,15 +206,12 @@ function App() {
           handleModeChange('image')
           setTimeout(() => fileInputRef.current?.click(), 100)
           shouldShowResult = false
-<<<<<<< HEAD
         } else if (result.action === 'SPEAK_LAST') {
           setTimeout(() => {
             const latestAudioBtn = document.querySelector('.audio-speaker-btn') as HTMLButtonElement
             if (latestAudioBtn) latestAudioBtn.click()
           }, 100)
           shouldShowResult = false
-=======
->>>>>>> a1f0832aab51cd71d34c61ccb545ba39019251c4
         }
       }
 
@@ -227,7 +221,6 @@ function App() {
 
       const minFrame = mode === 'mini' && isWebcamActive ? webcamRef.current?.captureCurrentFrame() : null
 
-<<<<<<< HEAD
       if(result.action !== 'SPEAK_LAST') {
         setHistory(prev => [{
           query,
@@ -236,14 +229,6 @@ function App() {
           detections: result.detections || []
         }, ...prev])
       }
-=======
-      setHistory(prev => [{
-        query,
-        answer: result.answer,
-        preview: minFrame || preview,
-        detections: result.detections || []
-      }, ...prev])
->>>>>>> a1f0832aab51cd71d34c61ccb545ba39019251c4
 
       setQuery('')
 
@@ -359,11 +344,7 @@ function App() {
             </div>
 
             {mode === 'mini' ? (
-<<<<<<< HEAD
               <div className="relative w-full min-h-[380px] bg-white dark:bg-gray-950 border border-gray-700 rounded-xl overflow-hidden flex flex-col items-center justify-center p-8 transition-colors">
-=======
-              <div className="relative w-full min-h-[380px] bg-gray-950 border border-gray-700 rounded-xl overflow-hidden flex flex-col items-center justify-center p-8">
->>>>>>> a1f0832aab51cd71d34c61ccb545ba39019251c4
 
                 {/* Capa 1: gradiente radial */}
                 <div
@@ -379,7 +360,6 @@ function App() {
                   <div className="absolute w-48 h-48 rounded-full border border-blue-500/20 animate-ping" style={{ animationDuration: '3s', animationDelay: '0.5s' }} />
                 </div>
 
-<<<<<<< HEAD
                 {/* Capa 3: icono flotando (Efecto DVD) */}
                 <div 
                   ref={miniContainerRef} 
@@ -391,24 +371,12 @@ function App() {
                     style={{ top: 0, left: 0 }}
                   >
                     <img src="/chatbot.svg" alt="" className="w-full h-full object-cover" />
-=======
-                {/* Capa 3: icono flotando - sube la opacidad para verlo mejor */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none top-[80px]">
-                  <div className="animate-bounce" style={{ animationDuration: '3s' }}>
-                    <div className="w-[140px] h-[140px] rounded-full overflow-hidden aspect-square">
-                      <img src="/chatbot.svg" alt="" className="w-full h-full object-cover" />
-                    </div>
->>>>>>> a1f0832aab51cd71d34c61ccb545ba39019251c4
                   </div>
                 </div>
 
                 {/* Cuadro de texto central */}
                 <div className="relative z-10 w-full max-w-lg mb-6 flex flex-col items-center gap-4">
-<<<<<<< HEAD
                   <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 text-center transition-colors">
-=======
-                  <h3 className="text-xl font-medium text-gray-300 text-center">
->>>>>>> a1f0832aab51cd71d34c61ccb545ba39019251c4
                     {t.miniGreeting}
                   </h3>
 
@@ -425,11 +393,7 @@ function App() {
                     placeholder={audioLoading ? t.transcribing : t.miniPlaceholder}
                     rows={2}
                     maxLength={1000}
-<<<<<<< HEAD
                     className="w-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-purple-200 dark:border-purple-500/30 rounded-2xl px-6 py-4 text-gray-900 dark:text-gray-100 text-center text-lg placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-purple-500 shadow-[0_0_100px_rgba(168,85,247,0.15)] transition-all resize-none overflow-y-auto max-h-32"
-=======
-                    className="w-full bg-gray-800/80 backdrop-blur-sm border border-purple-500/30 rounded-2xl px-6 py-4 text-white text-center text-lg placeholder-gray-500 focus:outline-none focus:border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.15)] transition-all resize-none overflow-y-auto max-h-32"
->>>>>>> a1f0832aab51cd71d34c61ccb545ba39019251c4
                   />
 
                   {error && <p className="text-red-400 text-center text-sm">{error}</p>}
@@ -440,16 +404,12 @@ function App() {
                   <AudioInput
                     onTranscription={(text) => setQuery(prev => prev ? `${prev} ${text}` : text)}
                     onLoadingChange={(loading) => setAudioLoading(loading)}
-<<<<<<< HEAD
                     onRecordingChange={(recording) => setIsRecordingMini(recording)}
                     showHint={false}
-=======
->>>>>>> a1f0832aab51cd71d34c61ccb545ba39019251c4
                   />
                 </div>
 
                 <p className="relative z-10 mt-4 text-sm h-5 leading-5 text-center">
-<<<<<<< HEAD
                   {isRecordingMini ? (
                     <span className="text-red-400 animate-pulse">{t.tapToStopRecording}</span>
                   ) : loading ? (
@@ -461,12 +421,6 @@ function App() {
                           <kbd className="font-mono">Ctrl + M</kbd>
                       </span>
                     </>
-=======
-                  {loading ? (
-                    <span className="text-purple-400 animate-pulse">{t.analyzing}</span>
-                  ) : (
-                    <span className="text-gray-500">{t.tapToSpeak}</span>
->>>>>>> a1f0832aab51cd71d34c61ccb545ba39019251c4
                   )}
                 </p>
 
