@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
 from faster_whisper import WhisperModel
 from openai import OpenAI, RateLimitError
+from class_translations import translate_class
 import tempfile
 import cv2
 import numpy as np
@@ -73,7 +74,7 @@ async def analyze_image(
     detections = []
     for box in results.boxes:
         detections.append({
-            "class": results.names[int(box.cls[0])],
+            "class": translate_class(results.names[int(box.cls[0])], language),
             "confidence": round(float(box.conf[0]), 2),
             "bbox": [round(x, 1) for x in box.xyxy[0].tolist()]
         })
@@ -156,7 +157,7 @@ async def analyze_frame(
     detections = []
     for box in results.boxes:
         detections.append({
-            "class": results.names[int(box.cls[0])],
+            "class": translate_class(results.names[int(box.cls[0])], language),
             "confidence": round(float(box.conf[0]), 2),
             "bbox": [round(x, 1) for x in box.xyxy[0].tolist()]
         })
@@ -333,7 +334,7 @@ async def chat(
         results = yolo_model(img, conf=0.5)[0]
         for box in results.boxes:
             detections.append({
-                "class": results.names[int(box.cls[0])],
+                "class": translate_class(results.names[int(box.cls[0])], language),
                 "confidence": round(float(box.conf[0]), 2),
                 "bbox": [round(x, 1) for x in box.xyxy[0].tolist()]
             })

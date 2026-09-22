@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 textarea::-webkit-scrollbar {
   display: none;
 }

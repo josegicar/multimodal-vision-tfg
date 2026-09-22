@@ -123,3 +123,10 @@
   fallos o problemas del modo conversación, quitar foto o cámara cuando se pone la opción opuesta, el scroll del fondo de la página seguía activo al abrir el modal, lo que causaba saltos extraños.
 - Próximos pasos: Mostrar la aplicación completa y funcional al tutor (Fase 2 cerrada). Iniciar la fase
   de pruebas (testing) de componentes frontend y/o E2E aislando el trabajo en la rama test/.
+
+## Sesión 14 — 10/09/2026
+- Tiempo: 4h 15min
+- Logros: Implementación completa del sistema de temas Claro/Oscuro
+  (Light/Dark Mode) mediante variantes de Tailwind CSS.
+- Próximos pasos: Mostrar la aplicación completa, funcional y pulida al
+  tutor (Fase 2 cerrada). Iniciar la fase de pruebas (testing) de componentes frontend y/o E2E aislando el trabajo en la rama test/.

@@ -107,7 +107,11 @@ async def mini_endpoint(
                 f"2. Si el usuario pide encender, activar, usar la cámara o webcam "
                 f"(ej: 'enciende la cámara', 'quiero usar la webcam'), "
                 f"llama a 'activar_camara' y usa su resultado como respuesta final.\n"
-                f"3. Para saludos o charla casual sin relación con el historial, "
+                f"3. Si el usuario te pide que repitas, recites, dictes o leas en voz alta la última respuesta: "
+                f"SÍ TIENES ESA CAPACIDAD porque el frontend activará el altavoz. "
+                f"Debes llamar a 'responder_directamente' aportando como respuesta ÚNICA y EXACTA la etiqueta '[SPEAK_LAST]'. "
+                f"NO te disculpes, NO des explicaciones y NO digas que no puedes.\n"
+                f"4. Para saludos o charla casual sin relación con el historial, "
                 f"llama a 'responder_directamente' UNA SOLA VEZ con tu respuesta.\n"
                 f"En todos los casos, después de la primera llamada a herramienta, llama "
                 f"INMEDIATAMENTE a 'final_answer' con ese mismo texto. NO llames a la misma "
@@ -125,6 +129,9 @@ async def mini_endpoint(
         elif "[OPEN_FILE_PICKER]" in raw_answer:
             action = "OPEN_FILE_PICKER"
             clean_answer = raw_answer.replace("[OPEN_FILE_PICKER]", "").strip()
+        elif "[SPEAK_LAST]" in raw_answer:
+            action = "SPEAK_LAST"
+            clean_answer = raw_answer.replace("[SPEAK_LAST]", "").strip()
             
         new_history = conv_history + [
             {"role": "user", "content": query},

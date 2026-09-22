@@ -177,45 +177,51 @@ export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function Web
       setError('')
     } catch {
       setError(t.webcamError)
+      if (onActiveChange) onActiveChange(false)
     }
-  }, [t.webcamError])
+  }, [t.webcamError, onActiveChange])
 
   // Desactiva la webcam
   const stopWebcam = useCallback(() => {
-    streamRef.current?.getTracks().forEach(t => t.stop())
-    streamRef.current = null
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop())
+      streamRef.current = null
+    }
+    
+    if (videoRef.current) {
+      if (videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream
+        stream.getTracks().forEach(t => t.stop())
+      }
+      videoRef.current.srcObject = null
+    }
+
     if (intervalRef.current) clearInterval(intervalRef.current)
     intervalRef.current = null
     setActive(false)
     setDetections([])
+    
     if (overlayRef.current) {
       const ctx = overlayRef.current.getContext('2d')
       ctx?.clearRect(0, 0, overlayRef.current.width, overlayRef.current.height)
     }
   }, [])
 
-  // Inicia o detiene la cámara para modo Mini
   useEffect(() => {
     if (isActive) {
-      startWebcam(); 
+      startWebcam()
     } else {
-      stopWebcam();
+      stopWebcam()
     }
-  }, [isActive, startWebcam, stopWebcam]);
 
-  // Engancha el stream al vídeo
+    return () => stopWebcam()
+  }, [isActive, startWebcam, stopWebcam])
+
   useEffect(() => {
     if (active && videoRef.current && streamRef.current) {
       videoRef.current.srcObject = streamRef.current
     }
   }, [active])
-
-  // Avisa a App.tsx cuando 'active' cambie
-  useEffect(() => {
-    if (onActiveChange) {
-      onActiveChange(active)
-    }
-  }, [active, onActiveChange])
 
   // Arranca el polling cuando hay webcam activa y query escrita
   useEffect(() => {
@@ -258,8 +264,8 @@ export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function Web
       {/* Botón activar/desactivar */}
       <button
         ref={syncGradient}
-        onClick={active ? stopWebcam : startWebcam}
-        className={`w-full py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 ${
+        onClick={() => onActiveChange?.(!active)}
+        className={`w-full py-3 rounded-xl font-semibold text-white border border-gray-700 dark:border-gray-800 transition-all flex items-center justify-center gap-2 ${
           active
             ? 'bg-gradient-to-r from-red-600 via-pink-600 to-red-600 bg-[length:200%_200%] animate-gradient hover:opacity-90'
             : 'bg-gradient-to-r from-blue-500 via-purple-600 to-blue-500 bg-[length:200%_200%] animate-gradient hover:opacity-90'

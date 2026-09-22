@@ -7,9 +7,11 @@ import axios from 'axios'
 interface Props {
   onTranscription: (text: string) => void
   onLoadingChange: (loading: boolean) => void
+  onRecordingChange?: (recording: boolean) => void
+  showHint?: boolean
 }
 
-export function AudioInput({ onTranscription, onLoadingChange }: Props) {
+export function AudioInput({ onTranscription, onLoadingChange, onRecordingChange, showHint = true }: Props) {
   const { language, t } = useLanguage()
   const [recording, setRecording] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -35,6 +37,7 @@ export function AudioInput({ onTranscription, onLoadingChange }: Props) {
 
       mediaRecorder.start()
       setRecording(true)
+      onRecordingChange?.(true)
     } catch {
       console.error('No se pudo acceder al micrófono')
     }
@@ -43,6 +46,7 @@ export function AudioInput({ onTranscription, onLoadingChange }: Props) {
   const stopAudio = () => {
     mediaRecorderRef.current?.stop()
     setRecording(false)
+    onRecordingChange?.(false)
   }
 
   const setLoadingState = (val: boolean) => {
@@ -73,23 +77,30 @@ export function AudioInput({ onTranscription, onLoadingChange }: Props) {
   }
 
   return (
-    <button
-      onClick={recording ? stopAudio : startAudio}
-      disabled={loading}
-      title={recording ? t.stopAudio : t.startAudio}
-      className={`h-12 w-12 flex items-center justify-center rounded-xl transition-all flex-shrink-0 ${
-        recording
-          ? 'bg-red-600 hover:bg-red-700 animate-pulse'
-          : loading
-          ? 'bg-gray-700 opacity-50 cursor-not-allowed'
-          : 'bg-gray-700 hover:bg-gray-600'
-      }`}
-    >
-      {recording ? (
-        <Square size={18} fill="currentColor" className="text-white" />
-      ) : (
-        <Mic size={18} className={loading ? 'text-gray-400' : 'text-white'} />
+    <div className="relative flex flex-col items-center">
+      <button
+        onClick={recording ? stopAudio : startAudio}
+        disabled={loading}
+        title={recording ? t.stopAudio : t.startAudio}
+        className={`h-12 w-12 flex items-center justify-center rounded-xl transition-all flex-shrink-0 border ${
+          recording
+            ? 'bg-red-500 hover:bg-red-600 border-transparent text-white animate-pulse'
+            : loading
+            ? 'bg-gray-100 dark:bg-gray-800 border-gray-700 text-gray-500 dark:text-gray-400 transition-colors opacity-50 cursor-not-allowed'
+            : 'bg-gray-100 dark:bg-gray-800 border-gray-700 text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700'
+        }`}
+      >
+        {recording ? (
+          <Square size={18} fill="currentColor" className="text-white" />
+        ) : (
+          <Mic size={18} className={loading ? 'text-gray-400' : 'text-gray-700 dark:text-gray-300 transition-colors'} />
+        )}
+      </button>
+      {showHint && recording && (
+        <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] text-red-500 dark:text-red-400 bg-white dark:bg-gray-800 border border-red-500/30 rounded-full px-3 py-1 shadow-lg animate-pulse z-10 transition-colors">
+          {t.tapToStopRecording}
+        </span>
       )}
-    </button>
+    </div>
   )
 }
