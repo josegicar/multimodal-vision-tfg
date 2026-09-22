@@ -91,7 +91,7 @@ export function AudioOutput({ text }: Props) {
     <button
       onClick={speak}
       title={playing ? t.pauseAudio : t.playAudio}
-      className={`p-2 rounded-lg transition-all ${
+      className={`audio-speaker-btn w-7 h-7 flex items-center justify-center rounded-lg transition-all ${
         playing
           ? 'bg-purple-600 hover:bg-purple-700'
           : 'bg-gray-700 hover:bg-gray-600'

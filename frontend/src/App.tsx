@@ -59,7 +59,71 @@ function App() {
     }
   }, [query, mode])
 
-  const handleModeChange = (newMode: 'image' | 'webcam') => {
+  useEffect(() => {
+    if (isManualOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isManualOpen])
+
+  useEffect(() => {
+    if (mode !== 'mini') return
+
+    const container = miniContainerRef.current
+    const logo = miniLogoRef.current
+    if (!container || !logo) return
+
+    let x = Math.random() * (container.clientWidth - 140)
+    let y = Math.random() * (container.clientHeight - 140)
+    
+    let dx = 1
+    let dy = 1
+    let animationFrameId: number
+
+    const animate = () => {
+      if (!container || !logo) return
+      
+      const bounds = container.getBoundingClientRect()
+      const logoSize = 140 
+
+      if (x + logoSize >= bounds.width || x <= 0) dx = -dx
+      if (y + logoSize >= bounds.height || y <= 0) dy = -dy
+
+      x += dx
+      y += dy
+
+      logo.style.transform = `translate(${x}px, ${y}px)`
+      animationFrameId = requestAnimationFrame(animate)
+    }
+
+    animationFrameId = requestAnimationFrame(animate)
+
+    return () => cancelAnimationFrame(animationFrameId)
+  }, [mode])
+
+  // Atajo de teclado global: Ctrl + M (o Cmd + M en Mac) para el micrófono
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+        return
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'm') {
+        e.preventDefault()
+        const activeMicButton = document.querySelector('.mic-trigger-btn') as HTMLButtonElement
+        if (activeMicButton) activeMicButton.click()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  const handleModeChange = (newMode: 'image' | 'webcam' | 'mini') => {
     setMode(newMode)
     setResult(null)
   }
@@ -102,13 +166,42 @@ function App() {
         )
       }
 
-      setResult(response.data)
-      setHistory(prev => [{
-        query,
-        answer: response.data.answer,
-        preview,
-        detections: response.data.detections
-      }, ...prev])
+      const result = response.data
+
+      let shouldShowResult = true
+
+      if ('action' in result) {
+        if (result.action === 'ACTIVATE_WEBCAM') {
+          handleModeChange('webcam')
+          setIsWebcamActive(true)
+          shouldShowResult = false
+        } else if (result.action === 'OPEN_FILE_PICKER') {
+          handleModeChange('image')
+          setTimeout(() => fileInputRef.current?.click(), 100)
+          shouldShowResult = false
+        } else if (result.action === 'SPEAK_LAST') {
+          setTimeout(() => {
+            const latestAudioBtn = document.querySelector('.audio-speaker-btn') as HTMLButtonElement
+            if (latestAudioBtn) latestAudioBtn.click()
+          }, 100)
+          shouldShowResult = false
+        }
+      }
+
+      if (shouldShowResult) {
+        setResult(result)
+      }
+
+      const minFrame = mode === 'mini' && isWebcamActive ? webcamRef.current?.captureCurrentFrame() : null
+
+      if(result.action !== 'SPEAK_LAST') {
+        setHistory(prev => [{
+          query,
+          answer: result.answer,
+          preview: minFrame || preview,
+          detections: result.detections || []
+        }, ...prev])
+      }
 
       setQuery('')
 
@@ -197,7 +290,97 @@ function App() {
               </button>
             </div>
 
-            {mode === 'image' ? (
+            {mode === 'mini' ? (
+              <div className="relative w-full min-h-[380px] bg-white dark:bg-gray-950 border border-gray-700 rounded-xl overflow-hidden flex flex-col items-center justify-center p-8 transition-colors">
+
+                {/* Capa 1: gradiente radial */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'radial-gradient(circle at center, rgba(168,85,247,0.15) 0%, transparent 70%)',
+                  }}
+                />
+
+                {/* Capa 2: anillos pulsando */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-64 h-64 rounded-full border border-purple-500/20 animate-ping" style={{ animationDuration: '3s' }} />
+                  <div className="absolute w-48 h-48 rounded-full border border-blue-500/20 animate-ping" style={{ animationDuration: '3s', animationDelay: '0.5s' }} />
+                </div>
+
+                {/* Capa 3: icono flotando (Efecto DVD) */}
+                <div 
+                  ref={miniContainerRef} 
+                  className="absolute inset-0 overflow-hidden pointer-events-none rounded-xl"
+                >
+                  <div 
+                    ref={miniLogoRef}
+                    className="absolute dark:opacity-10 w-[140px] h-[140px] rounded-full overflow-hidden"
+                    style={{ top: 0, left: 0 }}
+                  >
+                    <img src="/chatbot.svg" alt="" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+
+                {/* Cuadro de texto central */}
+                <div className="relative z-10 w-full max-w-lg mb-6 flex flex-col items-center gap-4">
+                  <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 text-center transition-colors">
+                    {t.miniGreeting}
+                  </h3>
+
+                  <textarea
+                    ref={textareaRef}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSubmit()
+                      }
+                    }}
+                    placeholder={audioLoading ? t.transcribing : t.miniPlaceholder}
+                    rows={2}
+                    maxLength={1000}
+                    className="w-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-purple-200 dark:border-purple-500/30 rounded-2xl px-6 py-4 text-gray-900 dark:text-gray-100 text-center text-lg placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-purple-500 shadow-[0_0_100px_rgba(168,85,247,0.15)] transition-all resize-none overflow-y-auto max-h-32"
+                  />
+
+                  {error && <p className="text-red-400 text-center text-sm">{error}</p>}
+                </div>
+
+                {/* Micro central */}
+                <div className="relative z-10 scale-125 flex flex-col items-center gap-2">
+                  <AudioInput
+                    onTranscription={(text) => setQuery(prev => prev ? `${prev} ${text}` : text)}
+                    onLoadingChange={(loading) => setAudioLoading(loading)}
+                    onRecordingChange={(recording) => setIsRecordingMini(recording)}
+                    showHint={false}
+                  />
+                </div>
+
+                <p className="relative z-10 mt-4 text-sm h-5 leading-5 text-center">
+                  {isRecordingMini ? (
+                    <span className="text-red-400 animate-pulse">{t.tapToStopRecording}</span>
+                  ) : loading ? (
+                    <span className="text-purple-400 animate-pulse">{t.analyzing}</span>
+                  ) : (
+                    <>
+                      <span className="text-gray-500 dark:text-gray-400 block mb-1 transition-colors">{t.tapToSpeak}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md border border-gray-700 dark:border-gray-800">
+                          <kbd className="font-mono">Ctrl + M</kbd>
+                      </span>
+                    </>
+                  )}
+                </p>
+
+                {/* Input file oculto para que la orden [OPEN_FILE_PICKER] lo abra */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </div>
+            ) : mode === 'image' ? (
               <>
                 {/* Upload */}
                 <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 cursor-pointer hover:border-purple-500 transition-colors">
