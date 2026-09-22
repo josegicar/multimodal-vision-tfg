@@ -102,3 +102,24 @@
   base con precisión insuficiente mejorado cambiando a small con vad_filter=True 
   para filtrar silencios automáticamente
 - Próximos pasos: smolagents como orquestador de herramientas
+
+## Sesión 12 — 31/08/2026
+- Tiempo: 2h 37min
+- Logros: Sincronización global de animaciones CSS (gradientes) en los botones de la interfaz
+  calculando el delay de forma dinámica mediante refs del DOM, primeros pasos de integración
+  con smolagents.
+- Problemas encontrados: Desincronización de animaciones CSS al montar/desmontar componentes
+  en React y al cambiar pestañas, fallo de validación BaseTool en smolagents al pasar funciones
+  puras en lugar de instanciar las herramientas, que fue solucionado aplicando el decorador @tool.
+- Próximos pasos: Desarrollar la interfaz visual limpia del "Modo Mini" tipo agente y conectar 
+  completamente las órdenes JSON del agente autónomo con la ejecución de hardware (cámara/archivos) 
+  en el frontend.
+
+## Sesión 13 - 01/09/2026
+- Tiempo: 7h 32min
+- Logros: Completada la integración de smolagents permitiendo que Mini funcione como un agente
+  multimodal autónomo (capaz de enrutar tareas y ejecutar herramientas para cámara y archivos). Interfaz del "Modo Mini" finalizada con comportamiento de textarea unificado. Desarrollo e integración de un manual de usuario interactivo mediante un modal con soporte multilenguaje completo para todos los idiomas de la aplicación.
+- Problemas encontrados: Tener que implementar las tools y aportar unas correctas tasks para evitar
+  fallos o problemas del modo conversación, quitar foto o cámara cuando se pone la opción opuesta, el scroll del fondo de la página seguía activo al abrir el modal, lo que causaba saltos extraños.
+- Próximos pasos: Mostrar la aplicación completa y funcional al tutor (Fase 2 cerrada). Iniciar la fase
+  de pruebas (testing) de componentes frontend y/o E2E aislando el trabajo en la rama test/.
