@@ -98,7 +98,7 @@ git config commit.template .gitmessage
 git config --global core.editor "code --wait"
 ```
 
-# Iniciar el server de uvicorn
+## Iniciar el server de uvicorn
 - Backend docs: http://127.0.0.1:8000/docs
 
 ```bash
@@ -106,7 +106,7 @@ cd backend
 uvicorn main:app --reload
 ```
 
-# Iniciar el frontend
+## Iniciar el frontend
 - Frontend: http://localhost:5173
 
 ```bash
@@ -115,7 +115,7 @@ npm install # Instalar módulos la primera vez
 npm run dev
 ```
 
-# Despliegue Rápido con Docker (Recomendado)
+## Despliegue Rápido con Docker (Recomendado)
 El proyecto está completamente dockerizado y subido a Docker Hub. No necesitas instalar Node, Python ni compilar nada localmente.
 
 1. Asegúrate de tener tu archivo `.env` configurado en la raíz del proyecto.
@@ -123,11 +123,12 @@ El proyecto está completamente dockerizado y subido a Docker Hub. No necesitas 
 3. Ejecuta el entorno:
 ```bash
 docker compose up
+```
 
-## Acceso
+# Acceso
 - Frontend: http://localhost:5173
 - Backend docs: http://127.0.0.1:8000/docs
 
-## Notas
+# Notas
 - El modelo `yolov8n.pt` se descarga automáticamente en el primer arranque
 - No se sube el archivo `.env` al repositorio
