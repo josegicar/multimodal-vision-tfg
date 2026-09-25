@@ -104,7 +104,7 @@
 - Próximos pasos: smolagents como orquestador de herramientas
 
 ## Sesión 12 — 31/08/2026
-- Tiempo: 2h 37min
+- Tiempo: 2h37min
 - Logros: Sincronización global de animaciones CSS (gradientes) en los botones de la interfaz
   calculando el delay de forma dinámica mediante refs del DOM, primeros pasos de integración
   con smolagents.
@@ -116,7 +116,7 @@
   en el frontend.
 
 ## Sesión 13 - 01/09/2026
-- Tiempo: 7h 32min
+- Tiempo: 7h32min
 - Logros: Completada la integración de smolagents permitiendo que Mini funcione como un agente
   multimodal autónomo (capaz de enrutar tareas y ejecutar herramientas para cámara y archivos). Interfaz del "Modo Mini" finalizada con comportamiento de textarea unificado. Desarrollo e integración de un manual de usuario interactivo mediante un modal con soporte multilenguaje completo para todos los idiomas de la aplicación.
 - Problemas encontrados: Tener que implementar las tools y aportar unas correctas tasks para evitar
@@ -125,8 +125,19 @@
   de pruebas (testing) de componentes frontend y/o E2E aislando el trabajo en la rama test/.
 
 ## Sesión 14 — 10/09/2026
-- Tiempo: 4h 15min
+- Tiempo: 4h15min
 - Logros: Implementación completa del sistema de temas Claro/Oscuro
   (Light/Dark Mode) mediante variantes de Tailwind CSS.
 - Próximos pasos: Mostrar la aplicación completa, funcional y pulida al
   tutor (Fase 2 cerrada). Iniciar la fase de pruebas (testing) de componentes frontend y/o E2E aislando el trabajo en la rama test/.
+
+## Sesión 15 — 25/09/2026
+- Tiempo: 5h20min
+- Logros: Integración de EasyOCR como herramienta del agente para localizar texto y mapear coordenadas YOLO a la 
+  UI. Implementación de control de volumen global. Solución de inconsistencias de UI en modo claro. Subida de imágenes
+  a Docker Hub para despliegue universal sin dependencias locales y preparación de la Release v1.0.0 en GitHub. Nuevo
+  atajo para encender/apagar el micrófono.
+- Problemas encontrados: Caída del contenedor agent-service por falta de dependencias de sistema de OpenCV. 
+  Fragmentación de lecturas OCR en textos con mucho espaciado (como sopas de letras), mitigado limpiando espacios en la validación, aunque evidenciando las limitaciones de segmentación espacial del OCR clásico frente al razonamiento LLM.
+- Próximos pasos: Cierre final del código, redacción final de la memoria y preparación de la presentación y defensa del TFG ante el   
+  tribunal.

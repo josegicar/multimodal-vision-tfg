@@ -28,6 +28,8 @@ Proyecto de TFG centrado en la creación de un agente multimodal (Mini) con Fast
 - ✅ Internacionalización: Soporte completo para 6 idiomas (ES, EN, FR, DE, IT, PT) guardado en localStorage.
 - ✅ Intefaz Adaptativa: Sistema de temas Claro/Oscuro integrado nativamente con Tailwind CSS.
 - ✅ Manual de Usuario Interactivo: Guía modal integrada explicativa de atajos y modos de uso.
+- ✅ Motor OCR (EasyOCR): Localización y extracción de texto en imágenes para interactuar con la UI (señalización con flechas).
+- ✅ Control de Audio Global: Ajuste dinámico del volumen de síntesis de voz en tiempo real mediante Context API.
 - ✅ Análisis de colores dominantes con HSV
 - ✅ Historial de consultas con miniaturas
 
@@ -113,10 +115,14 @@ npm install # Instalar módulos la primera vez
 npm run dev
 ```
 
-# Arranque con Docker
+# Despliegue Rápido con Docker (Recomendado)
+El proyecto está completamente dockerizado y subido a Docker Hub. No necesitas instalar Node, Python ni compilar nada localmente.
+
+1. Asegúrate de tener tu archivo `.env` configurado en la raíz del proyecto.
+2. Modifica el archivo `docker-compose.yml` para usar las imágenes preconstruidas en lugar del build local (cambia `build: ./...` por `image: josegicar/tfg-...:latest`).
+3. Ejecuta el entorno:
 ```bash
-docker-compose up --build
-```
+docker compose up
 
 ## Acceso
 - Frontend: http://localhost:5173
