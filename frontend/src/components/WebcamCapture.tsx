@@ -16,7 +16,8 @@ interface Detection {
 interface WebcamResult {
   answer: string
   detections: Detection[]
-  frameBase64: string
+  frameBase64?: string
+  action?: string
 }
 
 interface Props {
@@ -28,6 +29,7 @@ interface Props {
   trigger: number
   onResult: (result: WebcamResult & { history?: string }) => void
   onActiveChange?: (isActive: boolean) => void
+  externalResult?: WebcamResult | null
 }
 
 export interface WebcamCaptureHandle {
@@ -36,10 +38,11 @@ export interface WebcamCaptureHandle {
 }
 
 export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function WebcamCapture(
-  { isActive, query, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange },
+  { isActive, query, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange, externalResult },
   ref
 ) {
   const { language, t } = useLanguage()
+  const activeRef = useRef(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const overlayRef = useRef<HTMLCanvasElement>(null)
@@ -52,7 +55,7 @@ export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function Web
   const [error, setError] = useState('')
   const [detections, setDetections] = useState<Detection[]>([])
 
-  const requestRefs = useRef({ isActive, query, language, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange})
+  const requestRefs = useRef({ isActive, query, language, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange, externalResult})
 
   useImperativeHandle(ref, () => ({
     captureCurrentFrame: () => {
@@ -72,11 +75,11 @@ export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function Web
   }))
 
   useEffect(() => {
-    requestRefs.current = { isActive, query, language, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange }
-  }, [isActive, query, language, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange])
+    requestRefs.current = { isActive, query, language, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange, externalResult }
+  }, [isActive, query, language, pollingEnabled, conversationMode, conversationHistory, trigger, onResult, onActiveChange, externalResult])
 
-  // Dibuja bounding boxes sobre el overlay
-  const drawOverlay = useCallback((dets: Detection[]) => {
+  // Dibuja bounding boxes o flechas sobre el overlay
+  const drawOverlay = useCallback((dets: Detection[], action?: string) => {
     const overlay = overlayRef.current
     const video = videoRef.current
     if (!overlay || !video) return
@@ -93,16 +96,46 @@ export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function Web
       const w = x2 - x1
       const h = y2 - y1
 
-      ctx.strokeStyle = '#00ff00'
-      ctx.lineWidth = 3
-      ctx.strokeRect(x1, y1, w, h)
+      if (action === 'POINT_TO') {
+        // Lógica de la Flecha Morada en caso de búsqueda
+        const cx = x1 + w / 2
+        const cy = y1 + h / 2
 
-      const label = `${det.class} ${(det.confidence * 100).toFixed(0)}%`
-      ctx.fillStyle = '#00ff00'
-      ctx.fillRect(x1, y1 - 24, label.length * 8, 24)
-      ctx.fillStyle = '#000000'
-      ctx.font = '16px Arial'
-      ctx.fillText(label, x1 + 4, y1 - 6)
+        ctx.fillStyle = '#a855f7'
+        ctx.beginPath()
+        ctx.moveTo(cx, cy - 10)
+        ctx.lineTo(cx - 15, cy - 40)
+        ctx.lineTo(cx - 5, cy - 40)
+        ctx.lineTo(cx - 5, cy - 70)
+        ctx.lineTo(cx + 5, cy - 70)
+        ctx.lineTo(cx + 5, cy - 40)
+        ctx.lineTo(cx + 15, cy - 40)
+        ctx.closePath()
+        ctx.fill()
+        ctx.strokeStyle = 'white'
+        ctx.lineWidth = 2
+        ctx.stroke()
+
+        const label = `¡Aquí! (${det.class})`
+        ctx.font = 'bold 18px Arial'
+        const metrics = ctx.measureText(label)
+        ctx.fillStyle = '#a855f7'
+        ctx.fillRect(cx - metrics.width / 2 - 8, cy - 100, metrics.width + 16, 26)
+        ctx.fillStyle = '#ffffff'
+        ctx.fillText(label, cx - metrics.width / 2, cy - 82)
+      } else {
+        // Lógica Normal (Cajas Verdes)
+        ctx.strokeStyle = '#00ff00'
+        ctx.lineWidth = 3
+        ctx.strokeRect(x1, y1, w, h)
+
+        const label = `${det.class}${(det.confidence * 100).toFixed(0)}%`
+        ctx.fillStyle = '#00ff00'
+        ctx.fillRect(x1, y1 - 24, label.length * 8, 24)
+        ctx.fillStyle = '#000000'
+        ctx.font = '16px Arial'
+        ctx.fillText(label, x1 + 4, y1 - 6)
+      }
     })
   }, [])
 
@@ -156,8 +189,9 @@ export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function Web
         )
       }
 
+      if (!activeRef.current) return
       setDetections(response.data.detections)
-      drawOverlay(response.data.detections)
+      drawOverlay(response.data.detections, response.data.action)
       currentOnResult({ ...response.data, frameBase64 })
     } catch {
       setError(t.analyzeError)
@@ -173,6 +207,7 @@ export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function Web
         video: { width: 640, height: 480 , facingMode: "user" }
       })
       streamRef.current = stream
+      activeRef.current = true
       setActive(true)
       setError('')
     } catch {
@@ -198,6 +233,7 @@ export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function Web
 
     if (intervalRef.current) clearInterval(intervalRef.current)
     intervalRef.current = null
+    activeRef.current = false
     setActive(false)
     setDetections([])
     
@@ -257,6 +293,23 @@ export const WebcamCapture = forwardRef<WebcamCaptureHandle, Props>(function Web
   useEffect(() => {
     return () => stopWebcam()
   }, [stopWebcam])
+
+  // Reacciona a los resultados que vienen desde fuera (ej: modo Mini)
+  useEffect(() => {
+    if (externalResult) {
+      const newDets = externalResult.detections || []
+      setDetections(newDets)
+      drawOverlay(newDets, externalResult.action)
+    } else {
+      // Si el resultado es null, limpiamos el canvas
+      const overlay = overlayRef.current
+      if (overlay) {
+        const ctx = overlay.getContext('2d')
+        ctx?.clearRect(0, 0, overlay.width, overlay.height)
+      }
+      setDetections([])
+    }
+  }, [externalResult, drawOverlay])
 
   return (
     <div className="flex flex-col gap-4">

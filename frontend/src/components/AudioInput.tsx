@@ -82,7 +82,7 @@ export function AudioInput({ onTranscription, onLoadingChange, onRecordingChange
         onClick={recording ? stopAudio : startAudio}
         disabled={loading}
         title={recording ? t.stopAudio : t.startAudio}
-        className={`h-12 w-12 flex items-center justify-center rounded-xl transition-all flex-shrink-0 border ${
+        className={`mic-trigger-btn h-12 w-12 flex items-center justify-center rounded-xl transition-all flex-shrink-0 border ${
           recording
             ? 'bg-red-500 hover:bg-red-600 border-transparent text-white animate-pulse'
             : loading

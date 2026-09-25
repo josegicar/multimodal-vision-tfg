@@ -19,6 +19,7 @@ interface Detection {
 interface AnalyzeResponse {
   answer: string
   detections: Detection[]
+  action?: string
 }
 
 interface HistoryEntry {
@@ -224,6 +225,10 @@ function App() {
             if (latestAudioBtn) latestAudioBtn.click()
           }, 100)
           shouldShowResult = false
+        } else if (result.action === 'POINT_TO') {
+          if (mode === 'mini') {
+            handleModeChange(isWebcamActive ? 'webcam' : 'image')
+          }
         }
       }
 
@@ -489,7 +494,7 @@ function App() {
                   />
                 )}
                 {result && (
-                  <OverlayCanvas imageUrl={preview} detections={result.detections || []} />
+                  <OverlayCanvas imageUrl={preview} detections={result.detections || []} action={result.action} />
                 )}
 
                 <div className="flex gap-2 items-end">
@@ -641,6 +646,7 @@ function App() {
                     })
                   }
                 }}
+                externalResult={result}
               />
             </div>
 
@@ -681,7 +687,7 @@ function App() {
                           className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-16 h-16 bg-gray-700 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
+                        <div className="w-16 h-16 bg-white dark:bg-gray-700 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
                           <img src="/chatbot.svg" alt="Mini" className="w-8 h-8 rounded-full object-cover" />
                         </div>
                       )}
@@ -788,7 +794,8 @@ function App() {
                       </h3>
                       <ul className="text-sm space-y-2">
                         <li><kbd className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-400 transition-colors border border-gray-700">Enter</kbd> : {t.guideShortcutEnter}</li>
-                        <li><kbd className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-400 transition-colors border border-gray-700">Shift</kbd> + <kbd className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-300 transition-colors border border-gray-700">Enter</kbd> : {t.guideShortcutShiftEnter}</li>
+                        <li><kbd className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-400 transition-colors border border-gray-700">Shift</kbd> + <kbd className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-400 transition-colors border border-gray-700">Enter</kbd> : {t.guideShortcutShiftEnter}</li>
+                        <li><kbd className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-400 transition-colors border border-gray-700">Ctrl</kbd> + <kbd className="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-400 transition-colors border border-gray-700">M</kbd> : {t.guideShortcutMic}</li>
                       </ul>
                     </section>
 

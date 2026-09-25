@@ -43,7 +43,7 @@ export function OverlayCanvas({ imageUrl, detections, action }: Props) {
         const h = y2 - y1
 
         if (action === 'POINT_TO') {
-          // 🎯 LÓGICA DE LA FLECHA
+          // Lógica de la flecha
           const centerX = x1 + w / 2
           const centerY = y1 + h / 2
           
@@ -86,12 +86,12 @@ export function OverlayCanvas({ imageUrl, detections, action }: Props) {
           ctx.fillText(label, centerX - textWidth / 2, startY - labelHeight * 0.25 - 5)
 
         } else {
-          // 📦 LÓGICA NORMAL DE LA CAJA VERDE (Tu código original)
+          // Lógica canvas caja verde
           ctx.strokeStyle = '#00ff00'
           ctx.lineWidth = lineWidth
           ctx.strokeRect(x1, y1, w, h)
 
-          const label = `({det.class}){(det.confidence * 100).toFixed(0)}%`
+          const label = `${det.class} ${(det.confidence * 100).toFixed(0)}%`
           ctx.font = `${fontSize}px Arial`
           const textWidth = ctx.measureText(label).width
 

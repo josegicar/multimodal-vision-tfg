@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Volume2, VolumeX } from 'lucide-react'
 import { API_URL } from '../config'
 import { useLanguage } from '../context/LanguageContext'
+import { useVolume } from '../context/VolumeContext'
 
 interface Props {
   text: string
@@ -12,9 +13,17 @@ let currentStop: (() => void) | null = null
 
 export function AudioOutput({ text }: Props) {
   const { language, t } = useLanguage()
+  const { volume } = useVolume()
   const [playing, setPlaying] = useState(false)
   const [loading, setLoading] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Sincroniza el volumen en tiempo real si se mueve el slider mientras Mini habla
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume
+    }
+  }, [volume])
 
   useEffect(() => {
     return () => {
@@ -65,6 +74,7 @@ export function AudioOutput({ text }: Props) {
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
       const newAudio = new Audio(url)
+      newAudio.volume = volume
       audioRef.current = newAudio
       currentAudio = newAudio
       currentStop = () => setPlaying(false)

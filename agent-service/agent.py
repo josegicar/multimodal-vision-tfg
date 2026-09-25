@@ -1,6 +1,6 @@
 import os
 from smolagents import ToolCallingAgent, OpenAIServerModel
-from tools import responder_directamente, activar_camara, adjuntar_documento, detecta_objetos_en_imagen, analiza_color_en_imagen, analiza_frame_webcam
+from tools import responder_directamente, activar_camara, adjuntar_documento, detecta_objetos_en_imagen, analiza_color_en_imagen, analiza_frame_webcam, buscar_texto_en_imagen
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,7 +12,7 @@ model = OpenAIServerModel(
 
 def create_agent():
     return ToolCallingAgent(
-        tools=[responder_directamente, activar_camara, adjuntar_documento, detecta_objetos_en_imagen, analiza_color_en_imagen, analiza_frame_webcam],
+        tools=[responder_directamente, activar_camara, adjuntar_documento, detecta_objetos_en_imagen, analiza_color_en_imagen, analiza_frame_webcam, buscar_texto_en_imagen],
         model=model,
         max_steps=4
     )

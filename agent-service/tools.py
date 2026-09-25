@@ -1,11 +1,17 @@
 import base64
 import os
 import httpx
+import easyocr
+import cv2
+import numpy as np
 from smolagents import tool
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
+# Variable global para el lector OCR (Lazy loading para no bloquear el inicio)
+ocr_reader = None
 _current_frame_base64 = ""
+_last_detections = []
 
 def set_current_frame(frame_base64: str):
     global _current_frame_base64
@@ -66,7 +72,13 @@ def detecta_objetos_en_imagen(image_path: str, query: str, language: str = "es")
             timeout=30.0
         )
         result = response.json()
-        return f"Respuesta: {result['answer']}\nDetecciones: {result['detections']}"
+        global _last_detections
+        _last_detections = result.get('detections', [])
+
+        return (f"Respuesta: {result['answer']}\n"
+                f"Detecciones: {result['detections']}\n\n"
+                f"INSTRUCCIÓN OBLIGATORIA: Si el usuario te ha pedido explícitamente buscar, encontrar, señalar o te pregunta dónde está un objeto concreto, "
+                f"añade exactamente la etiqueta [POINT_TO] al final de tu respuesta.")
 
 @tool
 def analiza_color_en_imagen(image_path: str, language: str = "es") -> str:
@@ -124,4 +136,63 @@ def analiza_frame_webcam(query: str, language: str = "es") -> str:
             timeout=30.0
         )
         result = response.json()
-        return f"Respuesta: {result['answer']}\nDetecciones: {result.get('detections', [])}"
+        global _last_detections
+        _last_detections = result.get('detections', [])
+        return (f"Respuesta: {result['answer']}\n"
+                f"Detecciones: {result['detections']}\n\n"
+                f"INSTRUCCIÓN OBLIGATORIA: Si el usuario te ha pedido explícitamente buscar, encontrar, señalar o te pregunta dónde está un objeto concreto, persona o texto, "
+                f"añade exactamente la etiqueta [POINT_TO] al final de tu respuesta.")
+
+@tool
+def buscar_texto_en_imagen(texto_buscar: str, ruta_imagen: str = "") -> str:
+    """
+    Busca un texto o palabra específica dentro de una imagen usando OCR y guarda sus coordenadas.
+    Usa esta herramienta EXCLUSIVAMENTE cuando el usuario pida leer, buscar o localizar un texto o palabra.
+    
+    Args:
+        texto_buscar: La palabra exacta que el usuario quiere encontrar (ej: 'Patata').
+        ruta_imagen: La ruta de la imagen si se proporcionó en el prompt. Si es la webcam, déjalo vacío ("").
+    """
+    global ocr_reader, _last_detections, _current_frame_base64
+    
+    if ocr_reader is None:
+        # Arrancamos el modelo OCR para español, inglés, francés, alemán, italiano y portugués
+        ocr_reader = easyocr.Reader(['es', 'en', 'fr', 'de', 'it', 'pt'], gpu=True)
+        
+    img = None
+    # 1. Intentar cargar la imagen estática
+    if ruta_imagen and os.path.exists(ruta_imagen):
+        img = cv2.imread(ruta_imagen)
+    # 2. Intentar cargar el frame de la webcam
+    elif _current_frame_base64:
+        encoded_data = _current_frame_base64.split(',')[1] if ',' in _current_frame_base64 else _current_frame_base64
+        nparr = np.frombuffer(base64.b64decode(encoded_data), np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+    if img is None:
+        return "Error: No se encontró imagen o frame de webcam para analizar."
+
+    # Ejecutar EasyOCR
+    resultados = ocr_reader.readtext(img)
+    texto_buscar_lower = texto_buscar.lower().replace(" ", "")
+    
+    for (bbox, texto_detectado, prob) in resultados:
+        if texto_buscar_lower in texto_detectado.lower().replace(" ", ""):
+            # EasyOCR devuelve 4 puntos: [top-left, top-right, bottom-right, bottom-left]
+            # Los convertimos al formato de YOLO [x1, y1, x2, y2]
+            x_coords = [p[0] for p in bbox]
+            y_coords = [p[1] for p in bbox]
+            
+            x1, y1 = min(x_coords), min(y_coords)
+            x2, y2 = max(x_coords), max(y_coords)
+            
+            # "Disfrazamos" el OCR como una detección de YOLO
+            _last_detections.append({
+                'class': f'Texto: {texto_detectado}',
+                'confidence': float(prob),
+                'bbox': [float(x1), float(y1), float(x2), float(y2)]
+            })
+            
+            return f"Éxito: Encontré el texto '{texto_detectado}' con una confianza del {prob*100:.0f}%."
+            
+    return f"Fracaso: No pude encontrar la palabra '{texto_buscar}' en la imagen."

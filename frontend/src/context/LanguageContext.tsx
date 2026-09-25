@@ -63,6 +63,7 @@ const languages = {
     guideShortcutsTitle: 'Atajos de teclado',
     guideShortcutEnter: 'Enviar tu pregunta rápidamente.',
     guideShortcutShiftEnter: 'Añadir un salto de línea en tu mensaje sin enviarlo.',
+    guideShortcutMic: 'Activar o desactivar el micrófono globalmente.',
     detectedObjects: (n: number) => `${n} objeto(s) detectado(s)`,
   },
   en: {
@@ -127,6 +128,7 @@ const languages = {
     guideShortcutsTitle: 'Keyboard shortcuts',
     guideShortcutEnter: 'Send your question quickly.',
     guideShortcutShiftEnter: 'Add a line break to your message without sending it.',
+    guideShortcutMic: 'Toggle the microphone globally.',
     detectedObjects: (n: number) => `${n} detected object(s)`,
   },
   fr: {
@@ -192,6 +194,7 @@ const languages = {
     guideShortcutsTitle: 'Raccourcis clavier',
     guideShortcutEnter: 'Envoyer votre question rapidement.',
     guideShortcutShiftEnter: 'Ajouter un saut de ligne dans votre message sans l\'envoyer.',
+    guideShortcutMic: 'Activer ou désactiver le microphone globalement.',
     detectedObjects: (n: number) => `${n} objet(s) détecté(s)`,
   },
   de: {
@@ -257,6 +260,7 @@ const languages = {
     guideShortcutsTitle: 'Tastenkombinationen',
     guideShortcutEnter: 'Senden Sie Ihre Frage schnell.',
     guideShortcutShiftEnter: 'Fügen Sie einen Zeilenumbruch hinzu, ohne die Nachricht zu senden.',
+    guideShortcutMic: 'Mikrofon global aktivieren oder deaktivieren.',
     detectedObjects: (n: number) => `${n} erkanntes Objekt(e)`,
   },
   it: {
@@ -322,6 +326,7 @@ const languages = {
     guideShortcutsTitle: 'Scorciatoie da tastiera',
     guideShortcutEnter: 'Invia rapidamente la tua domanda.',
     guideShortcutShiftEnter: 'Aggiungi un\'interruzione di riga nel messaggio senza inviarlo.',
+    guideShortcutMic: 'Attivare o disattivare il microfono a livello globale.',
     detectedObjects: (n: number) => `${n} oggetto/i rilevato/i`,
   },
   pt: {
@@ -387,6 +392,7 @@ const languages = {
     guideShortcutsTitle: 'Atalhos de teclado',
     guideShortcutEnter: 'Envie sua pergunta rapidamente.',
     guideShortcutShiftEnter: 'Adicione uma quebra de linha na sua mensagem sem enviá-la.',
+    guideShortcutMic: 'Ativar ou desativar o microfone globalmente.',
     detectedObjects: (n: number) => `${n} objeto(s) detetado(s)`,
   },
 }

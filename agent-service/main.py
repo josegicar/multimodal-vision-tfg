@@ -4,6 +4,7 @@ import tempfile
 import os
 import json
 from agent import create_agent
+import tools
 from tools import set_current_frame
 
 app = FastAPI()
@@ -61,6 +62,8 @@ async def mini_endpoint(
                 f"Te llamas Mini, y el usuario ha subido una imagen guardada en la ruta '{image_path}'. "
                 f"Responde en idioma '{language}'.\n\n"
                 f"INSTRUCCIÓN CRÍTICA:\n"
+                f"- Si el usuario te pide buscar, encontrar, señalar o localizar CUALQUIER objeto, persona o texto, "
+                f"DEBES añadir EXACTAMENTE la etiqueta [POINT_TO] al final de tu respuesta final.\n"
                 f"- Si la pregunta es solo sobre el CONTENIDO VISUAL de la imagen actual (qué hay, "
                 f"qué colores, qué objetos), usa 'detecta_objetos_en_imagen' o 'analiza_color_en_imagen'.\n"
                 f"- Si la pregunta es solo sobre el HISTORIAL (qué dijiste antes, qué te pedí antes), "
@@ -79,6 +82,8 @@ async def mini_endpoint(
                 f"{history_block}"
                 f"Te llamas Mini, y el usuario tiene la webcam activa ahora mismo. Responde en idioma '{language}'.\n\n"
                 f"INSTRUCCIÓN CRÍTICA:\n"
+                f"- Si el usuario te pide buscar, encontrar, señalar o localizar CUALQUIER objeto, persona o texto, "
+                f"DEBES añadir EXACTAMENTE la etiqueta [POINT_TO] al final de tu respuesta final.\n"
                 f"- Si la pregunta es solo sobre lo que la webcam ve AHORA (qué ves, hay algo, describe "
                 f"la cámara), usa 'analiza_frame_webcam'.\n"
                 f"- Si la pregunta es solo sobre el HISTORIAL (qué dijiste antes, qué veías antes), "
@@ -119,11 +124,15 @@ async def mini_endpoint(
             )
 
         agent = create_agent()
+        tools._last_detections = []
         raw_answer = str(agent.run(task))
 
         action = None
         clean_answer = raw_answer
-        if "[ACTIVATE_WEBCAM]" in raw_answer:
+        if "[POINT_TO]" in raw_answer:
+            action = "POINT_TO"
+            clean_answer = raw_answer.replace("[POINT_TO]", "").strip()
+        elif "[ACTIVATE_WEBCAM]" in raw_answer:
             action = "ACTIVATE_WEBCAM"
             clean_answer = raw_answer.replace("[ACTIVATE_WEBCAM]", "").strip()
         elif "[OPEN_FILE_PICKER]" in raw_answer:
@@ -142,7 +151,7 @@ async def mini_endpoint(
         return {
             "answer": clean_answer,
             "action": action,
-            "detections": [],
+            "detections": tools._last_detections,
             "history": json.dumps(new_history)
         }
 
